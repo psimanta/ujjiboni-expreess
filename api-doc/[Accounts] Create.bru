@@ -1,0 +1,18 @@
+meta {
+  name: [Accounts] Create
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/accounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+  "name": "SEBL",
+  "accountHolder": "Simanta"
+  }
+}

@@ -13,6 +13,9 @@ A minimal Express.js and TypeScript boilerplate with environment variable suppor
 - ✅ **Health Check** - Built-in health check endpoint
 - ✅ **Hot Reload** - Development server with nodemon auto-restart
 - ✅ **Code Formatting** - Prettier with pre-commit hooks via Husky
+- ✅ **Database Integration** - MongoDB with Mongoose ODM
+- ✅ **Account Model** - Financial accounts with CRUD operations
+- ✅ **MVC Architecture** - Controllers separated from routes for better organization
 
 ## Quick Start
 
@@ -55,8 +58,20 @@ The server will start on `http://localhost:3000`
 
 ## API Endpoints
 
+### System
+
 - `GET /` - Welcome message
-- `GET /health` - Health check endpoint
+- `GET /health` - Health check endpoint (includes database status)
+
+### Accounts (Financial Accounts)
+
+- `GET /accounts` - Get all accounts with pagination and filtering
+- `GET /accounts/:id` - Get account by ID
+- `POST /accounts` - Create new account
+- `PUT /accounts/:id` - Update account
+- `PATCH /accounts/:id/lock` - Lock account
+- `PATCH /accounts/:id/unlock` - Unlock account
+- `DELETE /accounts/:id` - Delete account
 
 ## Environment Variables
 
@@ -64,14 +79,19 @@ Copy `.env.example` to `.env` and configure the following variables:
 
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment (development/production)
+- `DATABASE_URL` - MongoDB connection string (default: mongodb://localhost:27017/ujjiboni)
+- `DATABASE_NAME` - Database name (default: ujjiboni)
 
 ## Project Structure
 
 ```
 ├── src/
 │   ├── config/           # Configuration files
+│   ├── controllers/      # Route handlers (business logic)
+│   ├── database/         # Database connection
 │   ├── middleware/       # Express middleware
-│   ├── routes/           # API routes
+│   ├── models/           # Mongoose models
+│   ├── routes/           # API route definitions
 │   └── index.ts          # Main server file
 ├── .husky/               # Git hooks configuration
 ├── dist/                 # Compiled JavaScript (generated)
