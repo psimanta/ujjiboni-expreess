@@ -4,11 +4,11 @@ import express, { Application } from 'express';
 import config from './config';
 
 // Import middleware
-import { 
-  securityMiddleware, 
-  requestMiddleware, 
-  errorMiddleware, 
-  notFoundMiddleware 
+import {
+  securityMiddleware,
+  requestMiddleware,
+  errorMiddleware,
+  notFoundMiddleware,
 } from './middleware';
 
 // Import routes
@@ -35,4 +35,4 @@ app.listen(config.port, () => {
   console.log(`📋 App: ${config.app.name} v${config.api.version}`);
 });
 
-export default app; 
+export default app;

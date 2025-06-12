@@ -10,7 +10,7 @@ router.get('/', (req: Request, res: Response) => {
     description: config.app.description,
     version: config.api.version,
     environment: config.nodeEnv,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -22,8 +22,8 @@ router.get('/health', (req: Request, res: Response) => {
     uptime: process.uptime(),
     memory: process.memoryUsage(),
     environment: config.nodeEnv,
-    version: config.api.version
+    version: config.api.version,
   });
 });
 
-export default router; 
+export default router;

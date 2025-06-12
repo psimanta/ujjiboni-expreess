@@ -17,23 +17,12 @@
     "bracketType": 1,
     "relationshipDataTypeSync": true,
     "relationshipOptimization": false,
-    "columnOrder": [
-      1,
-      2,
-      4,
-      8,
-      16,
-      32,
-      64
-    ],
+    "columnOrder": [1, 2, 4, 8, 16, 32, 64],
     "maxWidthComment": -1,
     "ignoreSaveSettings": 0
   },
   "doc": {
-    "tableIds": [
-      "wJxOp_XtfqDCyBRDCaCBc",
-      "4oShcQ1hepNOyN6-SukE-"
-    ],
+    "tableIds": ["wJxOp_XtfqDCyBRDCaCBc", "4oShcQ1hepNOyN6-SukE-"],
     "relationshipIds": [],
     "indexIds": [],
     "memoIds": []
@@ -73,13 +62,8 @@
         "id": "4oShcQ1hepNOyN6-SukE-",
         "name": "accounts",
         "comment": "",
-        "columnIds": [
-          "gksa52ez_NKKfDTdwWJV2"
-        ],
-        "seqColumnIds": [
-          "tr0_65K-DBogb5o7WW-X3",
-          "gksa52ez_NKKfDTdwWJV2"
-        ],
+        "columnIds": ["gksa52ez_NKKfDTdwWJV2"],
+        "seqColumnIds": ["tr0_65K-DBogb5o7WW-X3", "gksa52ez_NKKfDTdwWJV2"],
         "ui": {
           "x": 454,
           "y": 136,
