@@ -1,7 +1,14 @@
 // Export all models from this directory
 export { Account, type IAccount } from './Accounts';
+export {
+  Transaction,
+  TransactionType,
+  type ITransaction,
+  type ITransactionModel,
+} from './Transaction';
 
 // This file makes it easy to import models like:
-// import { User } from '../models';
+// import { Account, Transaction } from '../models';
 // instead of:
-// import { User } from '../models/User';
+// import { Account } from '../models/Accounts';
+// import { Transaction } from '../models/Transaction';

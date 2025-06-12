@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import config from '../config';
 import Database from '../database';
 import accountRoutes from './account';
+import transactionRoutes from './transaction';
 
 const router = Router();
 
@@ -38,5 +39,8 @@ router.get('/health', (req: Request, res: Response) => {
 
 // Mount account routes
 router.use('/accounts', accountRoutes);
+
+// Mount transaction routes
+router.use('/transactions', transactionRoutes);
 
 export default router;

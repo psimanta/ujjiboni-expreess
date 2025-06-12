@@ -1,0 +1,21 @@
+meta {
+  name: [Transactions] Create
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/transactions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "accountId": "684a9c1541df5b5758c2e9c1",
+    "type": "debit",
+    "enteredBy": "N/A",
+    "amount": 59,
+    "comment": "Yean deposit"
+  }
+}

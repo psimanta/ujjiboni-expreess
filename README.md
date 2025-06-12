@@ -15,7 +15,9 @@ A minimal Express.js and TypeScript boilerplate with environment variable suppor
 - ✅ **Code Formatting** - Prettier with pre-commit hooks via Husky
 - ✅ **Database Integration** - MongoDB with Mongoose ODM
 - ✅ **Account Model** - Financial accounts with CRUD operations
+- ✅ **Transaction Model** - Financial transactions with account references
 - ✅ **MVC Architecture** - Controllers separated from routes for better organization
+- ✅ **Data Relationships** - Mongoose population for account details in transactions
 
 ## Quick Start
 
@@ -65,13 +67,19 @@ The server will start on `http://localhost:3000`
 
 ### Accounts (Financial Accounts)
 
-- `GET /accounts` - Get all accounts with pagination and filtering
+- `GET /accounts` - Get all accounts
 - `GET /accounts/:id` - Get account by ID
 - `POST /accounts` - Create new account
-- `PUT /accounts/:id` - Update account
-- `PATCH /accounts/:id/lock` - Lock account
-- `PATCH /accounts/:id/unlock` - Unlock account
-- `DELETE /accounts/:id` - Delete account
+
+### Transactions (Financial Transactions)
+
+- `GET /transactions` - Get all transactions with pagination and filtering
+- `GET /transactions/:id` - Get transaction by ID
+- `GET /transactions/account/:accountId` - Get transactions for specific account
+- `GET /transactions/account/:accountId/balance` - Get account balance and summary
+- `POST /transactions` - Create new transaction (debit/credit)
+- `PUT /transactions/:id` - Update transaction
+- `DELETE /transactions/:id` - Delete transaction
 
 ## Environment Variables
 

@@ -1,0 +1,11 @@
+meta {
+  name: [Transactions] Get Account Balance
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8080/transactions/account/684a9c1541df5b5758c2e9c1/balance
+  body: json
+  auth: inherit
+}
