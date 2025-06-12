@@ -98,6 +98,8 @@ transactionSchema.index({ accountId: 1, createdAt: -1 }); // For account transac
 transactionSchema.index({ type: 1, createdAt: -1 }); // For filtering by transaction type
 transactionSchema.index({ accountId: 1, type: 1 }); // Compound index for account + type queries
 transactionSchema.index({ enteredBy: 1, createdAt: -1 }); // For filtering by who entered the transaction
+transactionSchema.index({ transactionDate: -1 }); // For date range queries
+transactionSchema.index({ accountId: 1, transactionDate: -1 }); // For account statements by date
 
 // No pre-save middleware needed - using MongoDB's default _id
 

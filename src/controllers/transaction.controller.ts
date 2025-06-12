@@ -181,10 +181,11 @@ export const createTransaction = async (req: Request, res: Response) => {
     const { accountId, type, amount, comment, enteredBy, transactionDate } = req.body;
 
     // Validate required fields
-    if (!accountId || !type || !amount || !comment || !enteredBy) {
+    if (!accountId || !type || !amount || !comment || !enteredBy || !transactionDate) {
       return res.status(400).json({
         error: 'Validation error',
-        message: 'accountId, type, amount, comment, and enteredBy are required fields',
+        message:
+          'accountId, type, amount, comment, enteredBy, and transactionDate are required fields',
       });
     }
 
@@ -250,11 +251,11 @@ export const createTransaction = async (req: Request, res: Response) => {
 // PUT /transactions/:id - Update transaction
 export const updateTransaction = async (req: Request, res: Response) => {
   try {
-    const { type, amount, comment, enteredBy } = req.body;
+    const { type, amount, comment, enteredBy, transactionDate } = req.body;
 
     const transaction = await Transaction.findByIdAndUpdate(
       req.params.id,
-      { type, amount, comment, enteredBy },
+      { type, amount, comment, enteredBy, transactionDate },
       { new: true, runValidators: true }
     ).populate('accountId', 'name accountHolder');
 
