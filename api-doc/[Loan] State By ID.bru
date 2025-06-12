@@ -1,0 +1,19 @@
+meta {
+  name: [Loan] State By ID
+  type: http
+  seq: 14
+}
+
+get {
+  url: http://localhost:8080/loans/stats?memberId=684ac300850c17d08514507c
+  body: json
+  auth: inherit
+}
+
+params:query {
+  memberId: 684ac300850c17d08514507c
+}
+
+headers {
+  authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODRhYzMwMDg1MGMxN2QwODUxNDUwN2MiLCJlbWFpbCI6InNpbWFudGEucGF1bC4yNkBnbWFpbC5jb20iLCJyb2xlIjoiTUVNQkVSIiwiaWF0IjoxNzQ5NzU1MDQzfQ.EkXWxQX3_GOLtYoUdxRuUxA4YSqtxTKKBtT_vgH42Mg
+}

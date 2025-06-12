@@ -1,0 +1,22 @@
+meta {
+  name: [Loan] Payment
+  type: http
+  seq: 15
+}
+
+post {
+  url: http://localhost:8080/loans/684b28102cdb5bc94ea4326e/payments
+  body: json
+  auth: inherit
+}
+
+headers {
+  authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODRhYzMwMDg1MGMxN2QwODUxNDUwN2MiLCJlbWFpbCI6InNpbWFudGEucGF1bC4yNkBnbWFpbC5jb20iLCJyb2xlIjoiTUVNQkVSIiwiaWF0IjoxNzQ5NzU1MDQzfQ.EkXWxQX3_GOLtYoUdxRuUxA4YSqtxTKKBtT_vgH42Mg
+}
+
+body:json {
+  {
+    "amount": 5000,
+    "notes": "loan for 5 months"
+  }
+}

@@ -65,7 +65,6 @@ const transactionSchema = new Schema<ITransaction>(
       required: [true, 'Transaction entered by is required'],
       trim: true,
       maxlength: [100, 'Entered by cannot exceed 100 characters'],
-      index: true,
     },
     transactionDate: {
       type: Date,
@@ -100,8 +99,6 @@ transactionSchema.index({ accountId: 1, type: 1 }); // Compound index for accoun
 transactionSchema.index({ enteredBy: 1, createdAt: -1 }); // For filtering by who entered the transaction
 transactionSchema.index({ transactionDate: -1 }); // For date range queries
 transactionSchema.index({ accountId: 1, transactionDate: -1 }); // For account statements by date
-
-// No pre-save middleware needed - using MongoDB's default _id
 
 // Static methods
 transactionSchema.statics.findByAccount = function (accountId: Types.ObjectId) {

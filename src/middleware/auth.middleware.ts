@@ -38,7 +38,6 @@ export const authenticate = async (
     }
 
     const token = authHeader.substring(7); // Remove "Bearer " prefix
-    console.log('token', token);
 
     if (!token) {
       res.status(401).json({

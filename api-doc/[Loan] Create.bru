@@ -1,0 +1,25 @@
+meta {
+  name: [Loan] Create
+  type: http
+  seq: 11
+}
+
+post {
+  url: http://localhost:8080/loans
+  body: json
+  auth: inherit
+}
+
+headers {
+  authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODRhYzMwMDg1MGMxN2QwODUxNDUwN2MiLCJlbWFpbCI6InNpbWFudGEucGF1bC4yNkBnbWFpbC5jb20iLCJyb2xlIjoiTUVNQkVSIiwiaWF0IjoxNzQ5NzU1MDQzfQ.EkXWxQX3_GOLtYoUdxRuUxA4YSqtxTKKBtT_vgH42Mg
+}
+
+body:json {
+  {
+    "memberId": "684ac300850c17d08514507c",
+    "loanType": "PERSONAL",
+    "principalAmount": 30000,
+    "monthlyInterestRate": 2,
+    "notes": "loan for 5 months"
+  }
+}

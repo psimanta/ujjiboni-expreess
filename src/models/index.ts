@@ -7,6 +7,9 @@ export {
   type ITransactionModel,
 } from './Transaction';
 export { User, UserRole, type IUser } from './User';
+export { Loan, LoanStatus, LoanType, type ILoan } from './Loan';
+export { LoanPayment, type ILoanPayment } from './LoanPayment';
+export { InterestPayment, InterestPaymentStatus, type IInterestPayment } from './InterestPayment';
 
 // This file makes it easy to import models like:
 // import { Account, Transaction } from '../models';
