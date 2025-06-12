@@ -178,7 +178,7 @@ export const getAccountBalance = async (req: Request, res: Response) => {
 // POST /transactions - Create new transaction
 export const createTransaction = async (req: Request, res: Response) => {
   try {
-    const { accountId, type, amount, comment, enteredBy } = req.body;
+    const { accountId, type, amount, comment, enteredBy, transactionDate } = req.body;
 
     // Validate required fields
     if (!accountId || !type || !amount || !comment || !enteredBy) {
@@ -220,6 +220,7 @@ export const createTransaction = async (req: Request, res: Response) => {
       amount: Number(amount),
       comment,
       enteredBy,
+      transactionDate,
     });
 
     const savedTransaction = await transaction.save();

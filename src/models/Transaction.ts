@@ -13,7 +13,7 @@ export interface ITransaction extends Document {
   amount: number;
   comment: string;
   enteredBy: string;
-  balanceAfter?: number;
+  transactionDate: Date;
   createdAt: Date;
   updatedAt: Date;
   // Instance methods
@@ -66,6 +66,10 @@ const transactionSchema = new Schema<ITransaction>(
       trim: true,
       maxlength: [100, 'Entered by cannot exceed 100 characters'],
       index: true,
+    },
+    transactionDate: {
+      type: Date,
+      required: [true, 'Transaction date is required'], // e.g. 2024-01-15T14:30:00.000Z
     },
   },
   {
@@ -122,7 +126,7 @@ transactionSchema.statics.getAccountBalance = function (accountId: Types.ObjectI
           },
         },
         totalTransactions: { $sum: 1 },
-        lastTransaction: { $max: '$createdAt' },
+        lastTransaction: { $max: '$transactionDate' },
       },
     },
   ]);
