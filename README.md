@@ -12,6 +12,7 @@ A minimal Express.js and TypeScript boilerplate with environment variable suppor
 - ✅ **Error Handling** - Centralized error handling middleware
 - ✅ **Health Check** - Built-in health check endpoint
 - ✅ **Hot Reload** - Development server with nodemon auto-restart
+- ✅ **Code Formatting** - Prettier with pre-commit hooks via Husky
 
 ## Quick Start
 
@@ -23,16 +24,19 @@ A minimal Express.js and TypeScript boilerplate with environment variable suppor
 ### Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Copy environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 3. Start development server:
+
 ```bash
 npm run dev
 ```
@@ -46,6 +50,8 @@ The server will start on `http://localhost:3000`
 - `npm run build` - Build for production
 - `npm start` - Start production server
 - `npm run clean` - Clean build directory
+- `npm run format` - Format all files with Prettier
+- `npm run format:check` - Check if files are formatted correctly
 
 ## API Endpoints
 
@@ -63,11 +69,17 @@ Copy `.env.example` to `.env` and configure the following variables:
 
 ```
 ├── src/
+│   ├── config/           # Configuration files
+│   ├── middleware/       # Express middleware
+│   ├── routes/           # API routes
 │   └── index.ts          # Main server file
+├── .husky/               # Git hooks configuration
 ├── dist/                 # Compiled JavaScript (generated)
 ├── .env                  # Environment variables (not in git)
 ├── .env.example          # Environment variables template
 ├── .gitignore           # Git ignore rules
+├── .prettierrc          # Prettier configuration
+├── .prettierignore      # Prettier ignore rules
 ├── nodemon.json         # Nodemon configuration
 ├── package.json         # Dependencies and scripts
 ├── tsconfig.json        # TypeScript configuration
@@ -78,9 +90,29 @@ Copy `.env.example` to `.env` and configure the following variables:
 
 1. Make changes to files in the `src/` directory
 2. The development server will automatically restart
-3. Build for production: `npm run build`
-4. Start production server: `npm start`
+3. Code will be automatically formatted on commit (via Husky + Prettier)
+4. Build for production: `npm run build`
+5. Start production server: `npm start`
+
+### Code Formatting
+
+This project uses **Prettier** for automatic code formatting with the following rules:
+
+- Single quotes for strings
+- Semicolons required
+- 2-space indentation
+- 100 character line width
+- Trailing commas where valid
+
+**Automatic formatting** happens on every git commit via Husky pre-commit hooks.
+
+You can also format manually:
+
+```bash
+npm run format        # Format all files
+npm run format:check  # Check formatting without changes
+```
 
 ## License
 
-MIT 
+MIT
