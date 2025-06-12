@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import config from '../config';
+import Database from '../database';
 
 const router = Router();
 
@@ -16,6 +17,8 @@ router.get('/', (req: Request, res: Response) => {
 
 // Health check route
 router.get('/health', (req: Request, res: Response) => {
+  const database = Database.getInstance();
+
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -23,6 +26,12 @@ router.get('/health', (req: Request, res: Response) => {
     memory: process.memoryUsage(),
     environment: config.nodeEnv,
     version: config.api.version,
+    database: {
+      connected: database.getConnectionStatus(),
+      readyState: database.getConnection().readyState,
+      host: database.getConnection().host,
+      name: database.getConnection().name,
+    },
   });
 });
 
