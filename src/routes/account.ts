@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate, requireAdmin } from '../middleware/auth.middleware';
 import {
   getAllAccounts,
   getAccountById,
@@ -11,6 +12,8 @@ import {
 
 const router = Router();
 
+router.use(authenticate);
+
 // GET /accounts - Get all accounts
 router.get('/', getAllAccounts);
 
@@ -18,7 +21,7 @@ router.get('/', getAllAccounts);
 router.get('/:id', getAccountById);
 
 // POST /accounts - Create new account
-router.post('/', createAccount);
+router.post('/', [requireAdmin], createAccount);
 
 // PUT /accounts/:id - Update account
 // router.put('/:id', updateAccount);

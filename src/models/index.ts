@@ -6,6 +6,7 @@ export {
   type ITransaction,
   type ITransactionModel,
 } from './Transaction';
+export { User, UserRole, type IUser } from './User';
 
 // This file makes it easy to import models like:
 // import { Account, Transaction } from '../models';

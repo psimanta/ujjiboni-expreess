@@ -1,15 +1,22 @@
 meta {
-  name: [Accounts] Get
+  name: [User] Create User
   type: http
-  seq: 2
+  seq: 9
 }
 
-get {
-  url: http://localhost:8080/accounts
-  body: none
+post {
+  url: http://localhost:8080/users
+  body: json
   auth: inherit
 }
 
 headers {
   authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODRhYmQ4YWNiNGU5OTg1ZWEyYTM1NTciLCJlbWFpbCI6InVqamlib25pLm9yZ0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NDk3MjkxNTZ9.vWngpSHUsG8ZfTAHa95SqpHfJuac_B9N809yWtLflRA
+}
+
+body:json {
+  {
+  "email": "simanta.paul.26@gmail.com",
+  "fullName": "Simanta"
+  }
 }

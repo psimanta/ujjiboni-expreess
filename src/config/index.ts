@@ -24,7 +24,7 @@ export const config = {
 
   // JWT Configuration (for future use)
   jwt: {
-    secret: process.env.JWT_SECRET || 'default-secret-change-in-production',
+    secret: process.env.JWT_SECRET as string,
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
 
@@ -36,8 +36,8 @@ export const config = {
 
   // Application Settings
   app: {
-    name: 'Ujjiboni Express',
-    description: 'A minimal Express.js and TypeScript boilerplate',
+    name: 'Ujjiboni',
+    description: 'Ujjiboni is an organization.',
   },
 };
 

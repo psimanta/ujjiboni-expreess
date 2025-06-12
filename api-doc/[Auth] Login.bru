@@ -1,0 +1,18 @@
+meta {
+  name: [Auth] Login
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8080/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+  "email": "simanta.paul.26@gmail.com",
+  "password": "abcd1234#"
+  }
+}

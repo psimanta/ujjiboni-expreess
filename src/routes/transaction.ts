@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth.middleware';
 import {
   getAllTransactions,
   getTransactionById,
@@ -10,6 +11,8 @@ import {
 } from '../controllers';
 
 const router = Router();
+
+router.use(authenticate);
 
 // GET /transactions - Get all transactions
 router.get('/', getAllTransactions);

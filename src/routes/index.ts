@@ -3,6 +3,8 @@ import config from '../config';
 import Database from '../database';
 import accountRoutes from './account';
 import transactionRoutes from './transaction';
+import authRoutes from './auth.routes';
+import userRoutes from './user.routes';
 
 const router = Router();
 
@@ -36,6 +38,12 @@ router.get('/health', (req: Request, res: Response) => {
     },
   });
 });
+
+// Mount authentication routes
+router.use('/auth', authRoutes);
+
+// Mount user management routes
+router.use('/users', userRoutes);
 
 // Mount account routes
 router.use('/accounts', accountRoutes);
