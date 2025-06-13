@@ -5,14 +5,18 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/accounts
+  url: https://ujjiboni-expreess.onrender.com/accounts
   body: json
   auth: inherit
 }
 
+headers {
+  authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODRhYmQ4YWNiNGU5OTg1ZWEyYTM1NTciLCJlbWFpbCI6InVqamlib25pLm9yZ0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NDk3Njg4NjF9.mJa0me08FEBVH28qBJwUA2Hv-w2Y8K-5UKbvOJHRCd4
+}
+
 body:json {
   {
-    "name": "SEBL",
+    "name": "City",
     "accountHolder": "Simanta"
   }
 }

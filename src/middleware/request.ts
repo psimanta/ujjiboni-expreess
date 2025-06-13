@@ -1,6 +1,7 @@
 import { Application } from 'express';
 import express from 'express';
 import config from '../config';
+import morgan from 'morgan';
 
 const requestMiddleware = (app: Application): void => {
   // Parse JSON bodies
@@ -21,12 +22,9 @@ const requestMiddleware = (app: Application): void => {
   );
 
   // Request logging middleware
-  app.use((req, res, next) => {
-    if (config.nodeEnv === 'development') {
-      console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
-    }
-    next();
-  });
+  if (config.nodeEnv === 'development') {
+    app.use(morgan('dev'));
+  }
 };
 
 export default requestMiddleware;

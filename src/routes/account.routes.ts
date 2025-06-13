@@ -12,16 +12,14 @@ import {
 
 const router = Router();
 
-router.use(authenticate);
-
 // GET /accounts - Get all accounts
-router.get('/', getAllAccounts);
+router.get('/', [authenticate], getAllAccounts);
 
 // GET /accounts/:id - Get account by ID
-router.get('/:id', getAccountById);
+router.get('/:id', [authenticate], getAccountById);
 
 // POST /accounts - Create new account
-router.post('/', [requireAdmin], createAccount);
+router.post('/', [authenticate, requireAdmin], createAccount);
 
 // PUT /accounts/:id - Update account
 // router.put('/:id', updateAccount);

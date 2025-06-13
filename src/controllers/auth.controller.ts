@@ -75,10 +75,8 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: 'Login successful',
-        data: {
-          user: userResponse,
-          token,
-        },
+        user: userResponse,
+        token,
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -297,9 +295,8 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        data: {
-          user: req.user.toJSON(),
-        },
+        message: 'Profile fetched successfully',
+        user: req.user.toJSON(),
       });
     } catch (error) {
       console.error('Get profile error:', error);
@@ -381,6 +378,17 @@ export class AuthController {
         message: 'Internal server error during password change',
       });
     }
+  }
+
+  // Create an controller to check if the user is authenticated
+  async checkAuthentication(req: Request, res: Response): Promise<void> {
+    res.status(200).json({
+      success: true,
+      message: 'User is authenticated',
+      data: {
+        user: req.user,
+      },
+    });
   }
 }
 

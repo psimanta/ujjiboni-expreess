@@ -14,4 +14,7 @@ router.post('/reset-password', authController.resetPassword);
 router.get('/profile', authenticate, authController.getProfile);
 router.post('/change-password', authenticate, authController.changePassword);
 
+// Verify token endpoint
+router.get('/verify-token', authenticate, authController.checkAuthentication);
+
 export default router;

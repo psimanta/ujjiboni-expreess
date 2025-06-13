@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import config from '../config';
 import Database from '../database';
-import accountRoutes from './account';
-import transactionRoutes from './transaction';
+import accountRoutes from './account.routes';
+import transactionRoutes from './transaction.routes';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import loanRoutes from './loan.routes';

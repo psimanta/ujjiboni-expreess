@@ -1,7 +1,6 @@
 import { Application } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import config from '../config';
 
 const securityMiddleware = (app: Application): void => {
   // Security headers
@@ -10,9 +9,9 @@ const securityMiddleware = (app: Application): void => {
   // CORS configuration
   app.use(
     cors({
-      origin: config.allowedOrigins,
-      credentials: true,
+      origin: '*', // or use '*' for any origin (not for production)
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      credentials: true, // if you're sending cookies/auth headers
       allowedHeaders: ['Content-Type', 'Authorization'],
     })
   );
