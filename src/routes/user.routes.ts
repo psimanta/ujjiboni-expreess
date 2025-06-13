@@ -8,8 +8,8 @@ const router = Router();
 
 // Admin-only routes
 router.post('/', [authenticate, requireAdmin], userController.createUser); // Create user
-router.get('/', [authenticate, requireAdmin], userController.getUsers); // Get all users with pagination
-router.get('/stats', [authenticate, requireAdmin], userController.getUserStats); // Get user statistics
+router.get('/', [authenticate], userController.getUsers);
+router.get('/stats', [authenticate], userController.getUserStats); // Get user statistics
 
 // Routes that allow admin or own profile access (permission check is inside controller)
 router.get('/:id', [authenticate], userController.getUserById); // Get user by ID

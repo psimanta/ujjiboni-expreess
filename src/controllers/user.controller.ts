@@ -60,13 +60,9 @@ export class UserController {
     }
   }
 
-  // Get all users (admin only)
   async getUsers(req: Request, res: Response): Promise<void> {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
       const role = req.query.role as UserRole;
-      const search = req.query.search as string;
 
       // Build query
       const query: any = {};
@@ -75,37 +71,17 @@ export class UserController {
         query.role = role;
       }
 
-      if (search) {
-        query.$or = [
-          { fullName: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } },
-        ];
-      }
-
-      // Calculate skip
-      const skip = (page - 1) * limit;
-
       // Get users with pagination
       const [users, total] = await Promise.all([
-        User.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+        User.find(query).sort({ createdAt: -1 }),
         User.countDocuments(query),
       ]);
 
-      const totalPages = Math.ceil(total / limit);
-
       res.status(200).json({
         success: true,
-        data: {
-          users,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages,
-            hasNextPage: page < totalPages,
-            hasPrevPage: page > 1,
-          },
-        },
+        message: 'Users fetched successfully',
+        users,
+        total,
       });
     } catch (error) {
       console.error('Get users error:', error);

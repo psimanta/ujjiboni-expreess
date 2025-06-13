@@ -19,7 +19,7 @@ router.get('/', [authenticate], getAllAccounts);
 router.get('/:id', [authenticate], getAccountById);
 
 // POST /accounts - Create new account
-router.post('/', [authenticate, requireAdmin], createAccount);
+router.post('/', [authenticate], createAccount);
 
 // PUT /accounts/:id - Update account
 // router.put('/:id', updateAccount);

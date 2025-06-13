@@ -1,10 +1,11 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 // Define interface for the User document (financial account)
 export interface IAccount extends Document {
   name: string;
-  accountHolder: string;
+  accountHolder: Types.ObjectId;
   isLocked: boolean;
+
   createdAt: Date;
   updatedAt: Date;
   // Instance methods
@@ -22,10 +23,9 @@ const accountSchema = new Schema<IAccount>(
       maxlength: [100, 'Account name cannot exceed 100 characters'],
     },
     accountHolder: {
-      type: String,
-      required: [true, 'Account holder name is required'],
-      trim: true,
-      maxlength: [100, 'Account holder name cannot exceed 100 characters'],
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Account holder is required'],
     },
     isLocked: {
       type: Boolean,

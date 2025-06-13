@@ -16,7 +16,9 @@ export const getAllAccounts = async (req: Request, res: Response) => {
     }
 
     // Execute query
-    const accounts = await Account.find(query).sort({ createdAt: -1 });
+    const accounts = await Account.find(query)
+      .sort({ createdAt: -1 })
+      .populate('accountHolder', 'fullName');
 
     return res.json({ accounts });
   } catch (error) {
@@ -71,6 +73,7 @@ export const createAccount = async (req: Request, res: Response) => {
     const savedAccount = await account.save();
 
     return res.status(201).json({
+      success: true,
       message: 'Account created successfully',
       account: savedAccount,
     });
