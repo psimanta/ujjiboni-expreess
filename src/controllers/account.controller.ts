@@ -6,23 +6,27 @@ export const getAllAccounts = async (req: Request, res: Response) => {
   try {
     const { isLocked, accountHolder } = req.query;
 
-    // Build query object
-    const query: any = {};
+    // Build match stage for filtering
+    const matchStage: any = {};
     if (typeof isLocked !== 'undefined') {
-      query.isLocked = isLocked === 'true';
+      matchStage.isLocked = isLocked === 'true';
     }
     if (accountHolder) {
-      query.accountHolder = new RegExp(accountHolder as string, 'i');
+      matchStage.accountHolder = new RegExp(accountHolder as string, 'i');
     }
 
-    // Execute query
-    const accounts = await Account.find(query)
-      .sort({ createdAt: -1 })
-      .populate('accountHolder', 'fullName');
+    // Get accounts with balance
+    const accountsWithBalance = await Account.findAccountsWithBalance(matchStage);
 
-    return res.json({ accounts });
+    // Use aggregation to join accounts with their calculated balance
+
+    return res.json({
+      success: true,
+      accounts: accountsWithBalance,
+    });
   } catch (error) {
     return res.status(500).json({
+      success: false,
       error: 'Failed to fetch accounts',
       message: error instanceof Error ? error.message : 'Unknown error',
     });

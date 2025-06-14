@@ -102,6 +102,8 @@ export const getTransactionsByAccount = async (req: Request, res: Response) => {
     const total = await Transaction.countDocuments(query);
 
     return res.json({
+      success: true,
+      message: 'Transactions fetched successfully',
       transactions,
       pagination: {
         page: Number(page),
@@ -154,6 +156,8 @@ export const getAccountBalance = async (req: Request, res: Response) => {
     }, {});
 
     return res.json({
+      success: true,
+      message: 'Account balance fetched successfully',
       account: {
         id: account._id,
         name: account.name,

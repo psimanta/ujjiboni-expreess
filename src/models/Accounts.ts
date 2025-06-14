@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document, Types, Model } from 'mongoose';
 
 // Define interface for the User document (financial account)
 export interface IAccount extends Document {
@@ -11,6 +11,10 @@ export interface IAccount extends Document {
   // Instance methods
   lock(): Promise<IAccount>;
   unlock(): Promise<IAccount>;
+}
+
+export interface IAccountModel extends Model<IAccount> {
+  findAccountsWithBalance(matchStage: Record<string, string>): Promise<IAccount[]>;
 }
 
 // Define the User schema
@@ -69,6 +73,81 @@ accountSchema.statics.findByAccountHolder = function (accountHolder: string) {
   return this.find({ accountHolder: new RegExp(accountHolder, 'i') });
 };
 
+accountSchema.statics.findAccountsWithBalance = function (matchStage) {
+  return this.aggregate([
+    // Match accounts based on filters
+    ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+
+    // Lookup transactions for each account
+    {
+      $lookup: {
+        from: 'transactions',
+        localField: '_id',
+        foreignField: 'accountId',
+        as: 'transactions',
+      },
+    },
+
+    // Calculate balance and transaction stats
+    {
+      $addFields: {
+        balance: {
+          $reduce: {
+            input: '$transactions',
+            initialValue: 0,
+            in: {
+              $add: [
+                '$$value',
+                {
+                  $cond: [
+                    { $eq: ['$$this.type', 'credit'] },
+                    '$$this.amount',
+                    { $multiply: ['$$this.amount', -1] },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        totalTransactions: { $size: '$transactions' },
+        lastTransaction: {
+          $max: '$transactions.transactionDate',
+        },
+      },
+    },
+
+    // Lookup account holder details
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'accountHolder',
+        foreignField: '_id',
+        as: 'accountHolder',
+        pipeline: [{ $project: { fullName: 1 } }],
+      },
+    },
+
+    // Unwind accountHolder array to object
+    {
+      $unwind: {
+        path: '$accountHolder',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Remove transactions array from output and format response
+    {
+      $project: {
+        transactions: 0,
+        __v: 0,
+      },
+    },
+
+    // Sort by creation date (newest first)
+    { $sort: { createdAt: -1 } },
+  ]);
+};
+
 accountSchema.statics.findUnlocked = function () {
   return this.find({ isLocked: false });
 };
@@ -78,4 +157,4 @@ accountSchema.statics.findLocked = function () {
 };
 
 // Create and export the model
-export const Account = model<IAccount>('Account', accountSchema);
+export const Account = model<IAccount, IAccountModel>('Account', accountSchema);
