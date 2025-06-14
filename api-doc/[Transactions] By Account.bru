@@ -1,11 +1,11 @@
 meta {
-  name: [Transactions] Get All
+  name: [Transactions] By Account
   type: http
-  seq: 5
+  seq: 7
 }
 
 get {
-  url: http://localhost:8080/transactions?&page=1&limit=5
+  url: http://localhost:8080/transactions/account/684d1c0aa20403298b44ef3b?page=1&limit=5
   body: json
   auth: inherit
 }

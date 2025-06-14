@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { User, UserRole } from '../models';
+import { IUser, User, UserRole } from '../models';
 import emailService from '../services/email.service';
+import { FilterQuery } from 'mongoose';
 
 export class UserController {
   // Create a new user (admin only)
@@ -65,7 +66,7 @@ export class UserController {
       const role = req.query.role as UserRole;
 
       // Build query
-      const query: any = {};
+      const query: FilterQuery<IUser> = {};
 
       if (role && Object.values(UserRole).includes(role)) {
         query.role = role;

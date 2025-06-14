@@ -12,7 +12,7 @@ export interface ITransaction extends Document {
   type: TransactionType;
   amount: number;
   comment: string;
-  enteredBy: string;
+  enteredBy: Types.ObjectId;
   transactionDate: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -24,8 +24,21 @@ export interface ITransaction extends Document {
 export interface ITransactionModel extends Model<ITransaction> {
   findByAccount(accountId: Types.ObjectId): Promise<ITransaction[]>;
   findByType(type: TransactionType): Promise<ITransaction[]>;
-  getAccountBalance(accountId: Types.ObjectId): Promise<any[]>;
-  getAccountSummary(accountId: Types.ObjectId): Promise<any[]>;
+  getAccountBalance(accountId: Types.ObjectId): Promise<
+    {
+      _id: Types.ObjectId;
+      balance: number;
+      totalTransactions: number;
+      lastTransaction: Date;
+    }[]
+  >;
+  getAccountSummary(accountId: Types.ObjectId): Promise<
+    {
+      _id: TransactionType;
+      total: number;
+      count: number;
+    }[]
+  >;
 }
 
 // Define the Transaction schema
@@ -61,10 +74,9 @@ const transactionSchema = new Schema<ITransaction>(
       maxlength: [500, 'Comment cannot exceed 500 characters'],
     },
     enteredBy: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       required: [true, 'Transaction entered by is required'],
-      trim: true,
-      maxlength: [100, 'Entered by cannot exceed 100 characters'],
     },
     transactionDate: {
       type: Date,
@@ -76,7 +88,7 @@ const transactionSchema = new Schema<ITransaction>(
     toJSON: {
       transform: (_, ret) => {
         // ret.id = ret._id;
-        delete ret._id;
+        // delete ret._id;
         delete ret.__v;
         return ret;
       },
@@ -84,7 +96,7 @@ const transactionSchema = new Schema<ITransaction>(
     toObject: {
       transform: (_, ret) => {
         // ret.id = ret._id;
-        delete ret._id;
+        // delete ret._id;
         delete ret.__v;
         return ret;
       },

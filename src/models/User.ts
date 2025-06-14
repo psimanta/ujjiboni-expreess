@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export enum UserRole {
@@ -7,6 +7,7 @@ export enum UserRole {
 }
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   email: string;
   fullName: string;
   password?: string;

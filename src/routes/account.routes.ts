@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth.middleware';
+import { authenticate, requireMemberOnly } from '../middleware/auth.middleware';
 import {
   getAllAccounts,
   getAccountById,
@@ -19,7 +19,7 @@ router.get('/', [authenticate], getAllAccounts);
 router.get('/:id', [authenticate], getAccountById);
 
 // POST /accounts - Create new account
-router.post('/', [authenticate], createAccount);
+router.post('/', [authenticate, requireMemberOnly], createAccount);
 
 // PUT /accounts/:id - Update account
 // router.put('/:id', updateAccount);

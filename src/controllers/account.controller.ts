@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { Account } from '../models';
+import { Account, IAccount } from '../models';
+import { FilterQuery } from 'mongoose';
 
 // GET /accounts - Get all accounts (financial accounts)
 export const getAllAccounts = async (req: Request, res: Response) => {
@@ -7,16 +8,16 @@ export const getAllAccounts = async (req: Request, res: Response) => {
     const { isLocked, accountHolder } = req.query;
 
     // Build match stage for filtering
-    const matchStage: any = {};
+    const query: FilterQuery<IAccount> = {};
     if (typeof isLocked !== 'undefined') {
-      matchStage.isLocked = isLocked === 'true';
+      query.isLocked = isLocked === 'true';
     }
     if (accountHolder) {
-      matchStage.accountHolder = new RegExp(accountHolder as string, 'i');
+      query.accountHolder = new RegExp(accountHolder as string, 'i');
     }
 
     // Get accounts with balance
-    const accountsWithBalance = await Account.find(matchStage)
+    const accountsWithBalance = await Account.find(query)
       .populate('accountHolder', 'fullName email')
       .populate('createdBy', 'fullName email');
 

@@ -6,8 +6,8 @@ import {
   getTransactionsByAccount,
   getAccountBalance,
   createTransaction,
-  updateTransaction,
-  deleteTransaction,
+  // updateTransaction,
+  // deleteTransaction,
 } from '../controllers';
 
 const router = Router();
@@ -28,9 +28,9 @@ router.get('/account/:accountId/balance', [authenticate], getAccountBalance);
 router.post('/', [authenticate], createTransaction);
 
 // PUT /transactions/:id - Update transaction
-router.put('/:id', [authenticate], updateTransaction);
+// router.put('/:id', [authenticate], updateTransaction);
 
 // DELETE /transactions/:id - Delete transaction
-router.delete('/:id', [authenticate], deleteTransaction);
+// router.delete('/:id', [authenticate], deleteTransaction);
 
 export default router;

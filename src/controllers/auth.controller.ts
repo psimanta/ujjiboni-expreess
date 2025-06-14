@@ -8,7 +8,7 @@ import config from '../config';
 // Simple token generation for now - we'll fix the auth middleware later
 const generateToken = (user: IUser): string => {
   const payload = {
-    userId: (user._id as string).toString(),
+    userId: user._id.toString(),
     email: user.email,
     role: user.role,
   };
@@ -240,7 +240,11 @@ export class AuthController {
 
       // Verify reset token
       try {
-        const decoded = jwt.verify(token, config.jwt.secret) as any;
+        const decoded = jwt.verify(token, config.jwt.secret) as {
+          userId: string;
+          resetToken: string;
+          type: string;
+        };
 
         if (decoded.type !== 'password-reset') {
           res.status(400).json({

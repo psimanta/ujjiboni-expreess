@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { Transaction, TransactionType, Account } from '../models';
-import { Types } from 'mongoose';
+import { Transaction, TransactionType, Account, type ITransaction } from '../models';
+import { FilterQuery, Types } from 'mongoose';
 
 // GET /transactions - Get all transactions
 export const getAllTransactions = async (req: Request, res: Response) => {
@@ -8,7 +8,7 @@ export const getAllTransactions = async (req: Request, res: Response) => {
     const { accountId, type, enteredBy, page = 1, limit = 10 } = req.query;
 
     // Build query object
-    const query: any = {};
+    const query: FilterQuery<ITransaction> = {};
     if (accountId) {
       query.accountId = accountId;
     }
@@ -76,7 +76,10 @@ export const getTransactionsByAccount = async (req: Request, res: Response) => {
     const { type, page = 1, limit = 10 } = req.query;
 
     // Verify account exists
-    const accountExists = await Account.findById(accountId);
+    const accountExists = await Account.findById(accountId)
+      .populate('accountHolder', 'fullName email')
+      .populate('createdBy', 'fullName email');
+
     if (!accountExists) {
       return res.status(404).json({
         error: 'Account not found',
@@ -85,7 +88,7 @@ export const getTransactionsByAccount = async (req: Request, res: Response) => {
     }
 
     // Build query
-    const query: any = { accountId };
+    const query: FilterQuery<ITransaction> = { accountId };
     if (type && Object.values(TransactionType).includes(type as TransactionType)) {
       query.type = type;
     }
@@ -94,8 +97,8 @@ export const getTransactionsByAccount = async (req: Request, res: Response) => {
     const skip = (Number(page) - 1) * Number(limit);
 
     const transactions = await Transaction.find(query)
-      .populate('accountId', 'name accountHolder')
-      .sort({ createdAt: -1 })
+      .sort({ transactionDate: -1 })
+      .populate('enteredBy', 'fullName email')
       .skip(skip)
       .limit(Number(limit));
 
@@ -104,6 +107,7 @@ export const getTransactionsByAccount = async (req: Request, res: Response) => {
     return res.json({
       success: true,
       message: 'Transactions fetched successfully',
+      account: accountExists,
       transactions,
       pagination: {
         page: Number(page),
@@ -147,13 +151,19 @@ export const getAccountBalance = async (req: Request, res: Response) => {
           };
 
     // Transform summary data for easier consumption
-    const summary = summaryData.reduce((acc: any, item: any) => {
-      acc[item._id] = {
-        total: item.total,
-        count: item.count,
-      };
-      return acc;
-    }, {});
+    const summary = summaryData.reduce(
+      (
+        acc: Record<string, { total: number; count: number }>,
+        item: { _id: string; total: number; count: number }
+      ) => {
+        acc[item._id] = {
+          total: item.total,
+          count: item.count,
+        };
+        return acc;
+      },
+      {}
+    );
 
     return res.json({
       success: true,
@@ -182,14 +192,14 @@ export const getAccountBalance = async (req: Request, res: Response) => {
 // POST /transactions - Create new transaction
 export const createTransaction = async (req: Request, res: Response) => {
   try {
-    const { accountId, type, amount, comment, enteredBy, transactionDate } = req.body;
+    const { accountId, type, amount, comment, transactionDate } = req.body;
+    const enteredBy = req.user?._id?.toString();
 
     // Validate required fields
     if (!accountId || !type || !amount || !comment || !enteredBy || !transactionDate) {
       return res.status(400).json({
         error: 'Validation error',
-        message:
-          'accountId, type, amount, comment, enteredBy, and transactionDate are required fields',
+        message: 'accountId, type, amount, comment,  and transactionDate are required fields',
       });
     }
 
@@ -237,6 +247,7 @@ export const createTransaction = async (req: Request, res: Response) => {
     await savedTransaction.populate('accountId', 'name accountHolder');
 
     return res.status(201).json({
+      success: true,
       message: 'Transaction created successfully',
       transaction: savedTransaction,
     });
