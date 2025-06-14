@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { User, UserRole, type IUser } from '../models';
+import { User, UserRole } from '../models';
 import emailService from '../services/email.service';
 
 export class UserController {

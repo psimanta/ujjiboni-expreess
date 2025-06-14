@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { InterestPayment, Loan, User } from '../models';
+import { InterestPayment, Loan } from '../models';
 import { InterestPaymentStatus } from '../models/InterestPayment';
 
 // Generate monthly interest payment for a loan

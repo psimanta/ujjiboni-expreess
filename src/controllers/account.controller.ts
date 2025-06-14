@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Account, type IAccount } from '../models';
+import { Account } from '../models';
 
 // GET /accounts - Get all accounts (financial accounts)
 export const getAllAccounts = async (req: Request, res: Response) => {

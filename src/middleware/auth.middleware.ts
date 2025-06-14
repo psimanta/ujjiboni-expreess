@@ -7,7 +7,7 @@ import config from '../config';
 declare global {
   namespace Express {
     interface Request {
-      user?: IUser; // Using any for now to avoid TypeScript issues
+      user?: IUser;
     }
   }
 }

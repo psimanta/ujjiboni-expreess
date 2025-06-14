@@ -34,4 +34,8 @@ coverage/
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Exclude specific files and directories
+*.min.js
+*.min.css 

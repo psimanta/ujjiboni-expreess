@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { User, UserRole, type IUser } from '../models';
+import { User, type IUser } from '../models';
 import emailService from '../services/email.service';
 import config from '../config';
 
@@ -266,7 +266,7 @@ export class AuthController {
           success: true,
           message: 'Password reset successfully',
         });
-      } catch (jwtError) {
+      } catch (_error) {
         res.status(400).json({
           success: false,
           message: 'Invalid or expired reset token',

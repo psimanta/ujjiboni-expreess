@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate } from '../middleware/auth.middleware';
 import {
   getAllAccounts,
   getAccountById,
