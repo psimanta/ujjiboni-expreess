@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User, UserRole } from '../models';
+import { User, UserRole, type IUser } from '../models';
 import config from '../config';
 
 // Extend Request interface to include user
 declare global {
   namespace Express {
     interface Request {
-      user?: any; // Using any for now to avoid TypeScript issues
+      user?: IUser; // Using any for now to avoid TypeScript issues
     }
   }
 }

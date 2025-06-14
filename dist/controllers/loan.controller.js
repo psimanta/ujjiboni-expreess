@@ -37,7 +37,7 @@ class LoanController {
                 principalAmount,
                 monthlyInterestRate,
                 notes,
-                createdBy: req.user._id,
+                createdBy: req.user?._id?.toString(),
                 status: models_1.LoanStatus.ACTIVE,
             });
             await loan.save();

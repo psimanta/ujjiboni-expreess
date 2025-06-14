@@ -5,12 +5,14 @@ export interface IAccount extends Document {
   name: string;
   accountHolder: Types.ObjectId;
   isLocked: boolean;
-
+  balance: number;
+  createdBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   // Instance methods
   lock(): Promise<IAccount>;
   unlock(): Promise<IAccount>;
+  updateBalance(amount: number): Promise<IAccount>;
 }
 
 export interface IAccountModel extends Model<IAccount> {
@@ -31,25 +33,32 @@ const accountSchema = new Schema<IAccount>(
       ref: 'User',
       required: [true, 'Account holder is required'],
     },
+    balance: {
+      type: Number,
+      default: 0,
+    },
     isLocked: {
       type: Boolean,
       default: false,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Created by is required'],
     },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt
     toJSON: {
-      transform: (doc, ret) => {
-        ret.id = ret._id;
-        delete ret._id;
+      transform: (_, ret) => {
+        // ret.id = ret._id;
         delete ret.__v;
         return ret;
       },
     },
     toObject: {
-      transform: (doc, ret) => {
-        ret.id = ret._id;
-        delete ret._id;
+      transform: (_, ret) => {
+        // ret.id = ret._id;
         delete ret.__v;
         return ret;
       },
@@ -60,6 +69,11 @@ const accountSchema = new Schema<IAccount>(
 // Add instance methods
 accountSchema.methods.lock = function (): Promise<IAccount> {
   this.isLocked = true;
+  return this.save();
+};
+
+accountSchema.methods.updateBalance = function (amount: number) {
+  this.balance += amount;
   return this.save();
 };
 

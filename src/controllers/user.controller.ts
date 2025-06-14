@@ -146,7 +146,7 @@ export class UserController {
 
       // Check permissions
       const isAdmin = req.user.role === UserRole.ADMIN;
-      const isOwnProfile = req.user._id.toString() === id;
+      const isOwnProfile = req.user?._id?.toString() === id;
 
       if (!isAdmin && !isOwnProfile) {
         res.status(403).json({
@@ -206,7 +206,7 @@ export class UserController {
       }
 
       // Prevent admin from deleting themselves
-      if (req.user._id.toString() === id) {
+      if (req.user?._id?.toString() === id) {
         res.status(400).json({
           success: false,
           message: 'You cannot delete your own account',
@@ -252,7 +252,7 @@ export class UserController {
       }
 
       // Prevent admin from disabling themselves
-      if (req.user._id.toString() === id) {
+      if (req.user?._id?.toString() === id) {
         res.status(400).json({
           success: false,
           message: 'You cannot change your own status',

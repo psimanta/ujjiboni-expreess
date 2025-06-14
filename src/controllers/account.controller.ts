@@ -16,12 +16,15 @@ export const getAllAccounts = async (req: Request, res: Response) => {
     }
 
     // Get accounts with balance
-    const accountsWithBalance = await Account.findAccountsWithBalance(matchStage);
+    const accountsWithBalance = await Account.find(matchStage)
+      .populate('accountHolder', 'fullName email')
+      .populate('createdBy', 'fullName email');
 
     // Use aggregation to join accounts with their calculated balance
 
     return res.json({
       success: true,
+      message: 'Accounts fetched successfully',
       accounts: accountsWithBalance,
     });
   } catch (error) {
@@ -54,7 +57,7 @@ export const getAccountById = async (req: Request, res: Response) => {
   }
 };
 
-// POST /accounts - Create new account
+// POST /accounts - Create new account.
 export const createAccount = async (req: Request, res: Response) => {
   try {
     const { name, accountHolder, isLocked = false } = req.body;
@@ -63,7 +66,7 @@ export const createAccount = async (req: Request, res: Response) => {
     if (!name || !accountHolder) {
       return res.status(400).json({
         error: 'Validation error',
-        message: 'Name and accountHolder are required fields',
+        message: 'name, accountHolder, and createdBy are required fields',
       });
     }
 
@@ -72,6 +75,7 @@ export const createAccount = async (req: Request, res: Response) => {
       name,
       accountHolder,
       isLocked,
+      createdBy: req.user?._id?.toString(),
     });
 
     const savedAccount = await account.save();

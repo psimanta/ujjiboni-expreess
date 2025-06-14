@@ -47,7 +47,7 @@ export class LoanController {
         principalAmount,
         monthlyInterestRate,
         notes,
-        createdBy: req.user._id,
+        createdBy: req.user?._id,
         status: LoanStatus.ACTIVE,
       });
 
@@ -293,7 +293,7 @@ export class LoanController {
         paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
         amount: paymentAmount,
         outstandingBalanceAfter,
-        enteredBy: req.user._id,
+        enteredBy: req.user?._id?.toString(),
         notes,
       });
 
@@ -409,9 +409,9 @@ export class LoanController {
   // Get member's loans (for members to view their own loans)
   async getMemberLoans(req: Request, res: Response): Promise<void> {
     try {
-      const memberId = req.user.role === 'ADMIN' ? req.params.memberId : req.user._id;
+      const memberId = req.user?.role === 'ADMIN' ? req.params.memberId : req.user?._id?.toString();
 
-      const loans = await Loan.findByMember(memberId);
+      const loans = await Loan.findByMember(memberId as string);
 
       // Calculate additional details for each loan
       const loansWithDetails = await Promise.all(

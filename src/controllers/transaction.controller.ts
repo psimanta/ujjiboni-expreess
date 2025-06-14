@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Transaction, TransactionType, Account, type ITransaction } from '../models';
+import { Transaction, TransactionType, Account } from '../models';
 import { Types } from 'mongoose';
 
 // GET /transactions - Get all transactions
@@ -227,6 +227,9 @@ export const createTransaction = async (req: Request, res: Response) => {
       enteredBy,
       transactionDate,
     });
+
+    // Update account balance
+    await account.updateBalance(type === TransactionType.DEBIT ? -Number(amount) : Number(amount));
 
     const savedTransaction = await transaction.save();
 

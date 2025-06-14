@@ -147,8 +147,8 @@ const interestPaymentSchema = new Schema<IInterestPayment>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: function (doc, ret) {
-        ret.id = ret._id;
+      transform: function (_, ret) {
+        // ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
         return ret;
