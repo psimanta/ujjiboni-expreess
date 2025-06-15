@@ -15,7 +15,7 @@ const generateToken = (user) => {
         email: user.email,
         role: user.role,
     };
-    return jsonwebtoken_1.default.sign(payload, config_1.default.jwt.secret);
+    return jsonwebtoken_1.default.sign(payload, config_1.default.jwt.secret, { expiresIn: '1h' });
 };
 class AuthController {
     async login(req, res) {

@@ -13,7 +13,7 @@ const generateToken = (user: IUser): string => {
     role: user.role,
   };
 
-  return jwt.sign(payload, config.jwt.secret as jwt.Secret);
+  return jwt.sign(payload, config.jwt.secret as jwt.Secret, { expiresIn: '1h' });
 };
 
 export class AuthController {
