@@ -21,7 +21,9 @@ export interface ILoan extends Document {
   monthlyInterestRate: number; // Calculated monthly interest rate
   status: LoanStatus;
   notes?: string;
-  createdBy: mongoose.Types.ObjectId;
+  interestStartMonth: string;
+  loanDisbursementMonth: string;
+  enteredBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 
@@ -39,8 +41,6 @@ export interface ILoanModel extends mongoose.Model<ILoan> {
     totalLoans: number;
     activeLoans: number;
     completedLoans: number;
-    defaultedLoans: number;
-    suspendedLoans: number;
     totalPrincipalAmount: number;
   }>;
 }
@@ -83,7 +83,27 @@ const loanSchema = new Schema<ILoan>(
       trim: true,
       maxlength: [1000, 'Notes cannot exceed 1000 characters'],
     },
-    createdBy: {
+    loanDisbursementMonth: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function (value: string) {
+          return /^\d{4}-(?:0[1-9]|1[0-2])-01$/.test(value);
+        },
+        message: 'Loan taking month must be in YYYY-MM-01 format',
+      },
+    },
+    interestStartMonth: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function (value: string) {
+          return /^\d{4}-(?:0[1-9]|1[0-2])-01$/.test(value);
+        },
+        message: 'Interest start month must be in YYYY-MM-01 format',
+      },
+    },
+    enteredBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -116,7 +136,7 @@ loanSchema.methods.calculateOutstandingBalance = async function (): Promise<numb
     {
       $group: {
         _id: null,
-        totalPrincipalPaid: { $sum: '$principalAmount' },
+        totalPrincipalPaid: { $sum: '$amount' },
       },
     },
   ]);
@@ -156,7 +176,7 @@ loanSchema.statics.generateLoanNumber = async function (): Promise<string> {
 loanSchema.statics.findByMember = function (memberId: string) {
   return this.find({ memberId })
     .populate('memberId', 'fullName email')
-    .populate('createdBy', 'fullName email')
+    .populate('enteredBy', 'fullName email')
     .sort({ createdAt: -1 });
 };
 
@@ -186,8 +206,6 @@ loanSchema.statics.getLoanSummary = async function (memberId?: string) {
     totalLoans: 0,
     activeLoans: 0,
     completedLoans: 0,
-    defaultedLoans: 0,
-    suspendedLoans: 0,
     totalPrincipalAmount: 0,
   };
 

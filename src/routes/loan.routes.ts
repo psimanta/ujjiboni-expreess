@@ -17,7 +17,7 @@ router.get('/member/:memberId?', [authenticate], loanController.getMemberLoans);
 router.get('/:id', [authenticate], loanController.getLoanById); // Get loan by ID
 
 // Payment routes (members can record payments)
-router.post('/:loanId/payments', [authenticate, requireMemberOnly], loanController.recordPayment); // Record payment
-router.get('/:loanId/payments', [authenticate], loanController.getLoanPayments); // Get loan payments
+router.post('/:loan/payments', [authenticate, requireMemberOnly], loanController.recordPayment); // Record payment
+router.get('/:loan/payments', [authenticate], loanController.getLoanPayments); // Get loan payments
 
 export default router;

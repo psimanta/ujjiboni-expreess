@@ -1,10 +1,9 @@
 import mongoose, { Document, FilterQuery, Schema } from 'mongoose';
 
 export interface ILoanPayment extends Document {
-  loanId: mongoose.Types.ObjectId;
+  loan: mongoose.Types.ObjectId;
   paymentDate: Date;
   amount: number; // Only principal payments in this model
-  outstandingBalanceAfter: number;
   enteredBy: mongoose.Types.ObjectId; // Staff who entered payment
   notes?: string;
   createdAt: Date;
@@ -28,27 +27,19 @@ export interface ILoanPaymentModel extends mongoose.Model<ILoanPayment> {
 
 const loanPaymentSchema = new Schema<ILoanPayment>(
   {
-    loanId: {
+    loan: {
       type: Schema.Types.ObjectId,
       ref: 'Loan',
       required: true,
-      index: true,
     },
     paymentDate: {
       type: Date,
       required: true,
-      default: Date.now,
-      index: true,
     },
     amount: {
       type: Number,
       required: true,
       min: [0.01, 'Amount must be positive'],
-    },
-    outstandingBalanceAfter: {
-      type: Number,
-      required: true,
-      min: [0, 'Outstanding balance must be non-negative'],
     },
     enteredBy: {
       type: Schema.Types.ObjectId,
@@ -67,7 +58,7 @@ const loanPaymentSchema = new Schema<ILoanPayment>(
       virtuals: true,
       transform: function (_, ret) {
         // ret.id = ret._id;
-        delete ret._id;
+        // delete ret._id;
         delete ret.__v;
         return ret;
       },
@@ -76,12 +67,12 @@ const loanPaymentSchema = new Schema<ILoanPayment>(
 );
 
 // Indexes for better performance
-loanPaymentSchema.index({ loanId: 1, paymentDate: 1 });
+loanPaymentSchema.index({ loan: 1, paymentDate: 1 });
 
 // Static method to find payments by loan
 loanPaymentSchema.statics.findByLoan = function (loanId: string) {
-  return this.find({ loanId })
-    .populate('loanId', 'loanNumber principalAmount interestRate')
+  return this.find({ loan: loanId })
+    .populate('loan', 'loanNumber principalAmount interestRate')
     .populate('enteredBy', 'fullName email')
     .sort({ paymentDate: -1 });
 };
@@ -89,7 +80,7 @@ loanPaymentSchema.statics.findByLoan = function (loanId: string) {
 // Static method to find payments by member
 loanPaymentSchema.statics.findByMember = function (memberId: string) {
   return this.find({ enteredBy: memberId })
-    .populate('loanId', 'loanNumber principalAmount interestRate')
+    .populate('loan', 'loanNumber principalAmount interestRate')
     .populate('enteredBy', 'fullName email')
     .sort({ paymentDate: -1 });
 };
@@ -99,7 +90,7 @@ loanPaymentSchema.statics.getPaymentSummary = async function (loanId?: string) {
   const query: FilterQuery<ILoanPayment> = {};
 
   if (loanId) {
-    query.loanId = new mongoose.Types.ObjectId(loanId);
+    query.loan = new mongoose.Types.ObjectId(loanId);
   }
 
   const summary = await this.aggregate([
