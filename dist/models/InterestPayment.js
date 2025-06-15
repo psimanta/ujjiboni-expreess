@@ -55,22 +55,18 @@ const interestPaymentSchema = new mongoose_1.Schema({
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'Loan',
         required: true,
-        index: true,
     },
     paymentNumber: {
         type: String,
         required: true,
         unique: true,
-        index: true,
     },
     dueDate: {
         type: Date,
         required: true,
-        index: true,
     },
     paymentDate: {
         type: Date,
-        index: true,
     },
     dueAmount: {
         type: Number,
@@ -154,6 +150,7 @@ const interestPaymentSchema = new mongoose_1.Schema({
         },
     },
 });
+interestPaymentSchema.index({ loanId: 1 });
 interestPaymentSchema.index({ loanId: 1, dueDate: 1 });
 interestPaymentSchema.index({ status: 1, dueDate: 1 });
 interestPaymentSchema.index({ dueDate: 1 });
