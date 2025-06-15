@@ -1,9 +1,8 @@
 import mongoose, { Document } from 'mongoose';
 export interface ILoanPayment extends Document {
-    loanId: mongoose.Types.ObjectId;
+    loan: mongoose.Types.ObjectId;
     paymentDate: Date;
     amount: number;
-    outstandingBalanceAfter: number;
     enteredBy: mongoose.Types.ObjectId;
     notes?: string;
     createdAt: Date;

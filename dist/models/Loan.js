@@ -84,7 +84,27 @@ const loanSchema = new mongoose_1.Schema({
         trim: true,
         maxlength: [1000, 'Notes cannot exceed 1000 characters'],
     },
-    createdBy: {
+    loanDisbursementMonth: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function (value) {
+                return /^\d{4}-(?:0[1-9]|1[0-2])-01$/.test(value);
+            },
+            message: 'Loan taking month must be in YYYY-MM-01 format',
+        },
+    },
+    interestStartMonth: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function (value) {
+                return /^\d{4}-(?:0[1-9]|1[0-2])-01$/.test(value);
+            },
+            message: 'Interest start month must be in YYYY-MM-01 format',
+        },
+    },
+    enteredBy: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
@@ -104,11 +124,11 @@ loanSchema.index({ status: 1 });
 loanSchema.methods.calculateOutstandingBalance = async function () {
     const LoanPayment = mongoose_1.default.model('LoanPayment');
     const payments = await LoanPayment.aggregate([
-        { $match: { loanId: this._id } },
+        { $match: { loan: this._id } },
         {
             $group: {
                 _id: null,
-                totalPrincipalPaid: { $sum: '$principalAmount' },
+                totalPrincipalPaid: { $sum: '$amount' },
             },
         },
     ]);
@@ -117,7 +137,7 @@ loanSchema.methods.calculateOutstandingBalance = async function () {
 };
 loanSchema.methods.getPaymentHistory = async function () {
     const LoanPayment = mongoose_1.default.model('LoanPayment');
-    return await LoanPayment.find({ loanId: this._id })
+    return await LoanPayment.find({ loan: this._id })
         .populate('enteredBy', 'fullName email')
         .sort({ paymentDate: -1 });
 };
@@ -137,7 +157,7 @@ loanSchema.statics.generateLoanNumber = async function () {
 loanSchema.statics.findByMember = function (memberId) {
     return this.find({ memberId })
         .populate('memberId', 'fullName email')
-        .populate('createdBy', 'fullName email')
+        .populate('enteredBy', 'fullName email')
         .sort({ createdAt: -1 });
 };
 loanSchema.statics.findActiveLoans = function () {
@@ -161,8 +181,6 @@ loanSchema.statics.getLoanSummary = async function (memberId) {
         totalLoans: 0,
         activeLoans: 0,
         completedLoans: 0,
-        defaultedLoans: 0,
-        suspendedLoans: 0,
         totalPrincipalAmount: 0,
     };
     summary.forEach(item => {

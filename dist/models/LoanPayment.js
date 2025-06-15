@@ -36,27 +36,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoanPayment = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const loanPaymentSchema = new mongoose_1.Schema({
-    loanId: {
+    loan: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'Loan',
         required: true,
-        index: true,
     },
     paymentDate: {
         type: Date,
         required: true,
-        default: Date.now,
-        index: true,
     },
     amount: {
         type: Number,
         required: true,
         min: [0.01, 'Amount must be positive'],
-    },
-    outstandingBalanceAfter: {
-        type: Number,
-        required: true,
-        min: [0, 'Outstanding balance must be non-negative'],
     },
     enteredBy: {
         type: mongoose_1.Schema.Types.ObjectId,
@@ -73,29 +65,28 @@ const loanPaymentSchema = new mongoose_1.Schema({
     toJSON: {
         virtuals: true,
         transform: function (_, ret) {
-            delete ret._id;
             delete ret.__v;
             return ret;
         },
     },
 });
-loanPaymentSchema.index({ loanId: 1, paymentDate: 1 });
+loanPaymentSchema.index({ loan: 1, paymentDate: 1 });
 loanPaymentSchema.statics.findByLoan = function (loanId) {
-    return this.find({ loanId })
-        .populate('loanId', 'loanNumber principalAmount interestRate')
+    return this.find({ loan: loanId })
+        .populate('loan', 'loanNumber principalAmount interestRate')
         .populate('enteredBy', 'fullName email')
         .sort({ paymentDate: -1 });
 };
 loanPaymentSchema.statics.findByMember = function (memberId) {
     return this.find({ enteredBy: memberId })
-        .populate('loanId', 'loanNumber principalAmount interestRate')
+        .populate('loan', 'loanNumber principalAmount interestRate')
         .populate('enteredBy', 'fullName email')
         .sort({ paymentDate: -1 });
 };
 loanPaymentSchema.statics.getPaymentSummary = async function (loanId) {
     const query = {};
     if (loanId) {
-        query.loanId = new mongoose_1.default.Types.ObjectId(loanId);
+        query.loan = new mongoose_1.default.Types.ObjectId(loanId);
     }
     const summary = await this.aggregate([
         { $match: query },

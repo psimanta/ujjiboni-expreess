@@ -5,7 +5,7 @@ const models_1 = require("../models");
 class LoanController {
     async createLoan(req, res) {
         try {
-            const { memberId, loanType, principalAmount, monthlyInterestRate, notes } = req.body;
+            const { memberId, loanType, principalAmount, monthlyInterestRate, notes, interestStartMonth, loanDisbursementMonth, } = req.body;
             if (!memberId || !principalAmount || !monthlyInterestRate) {
                 res.status(400).json({
                     success: false,
@@ -21,15 +21,7 @@ class LoanController {
                 });
                 return;
             }
-            if (member.role !== 'MEMBER') {
-                res.status(400).json({
-                    success: false,
-                    message: 'Loans can only be created for members',
-                });
-                return;
-            }
             const loanNumber = await models_1.Loan.generateLoanNumber();
-            console.log('loanNumber', loanNumber);
             const loan = new models_1.Loan({
                 memberId,
                 loanNumber,
@@ -37,20 +29,20 @@ class LoanController {
                 principalAmount,
                 monthlyInterestRate,
                 notes,
-                createdBy: req.user?._id,
+                interestStartMonth,
+                enteredBy: req.user?._id,
                 status: models_1.LoanStatus.ACTIVE,
+                loanDisbursementMonth,
             });
             await loan.save();
             await loan.populate([
                 { path: 'memberId', select: 'fullName email' },
-                { path: 'createdBy', select: 'fullName email' },
+                { path: 'enteredBy', select: 'fullName email' },
             ]);
             res.status(201).json({
                 success: true,
                 message: 'Loan created successfully',
-                data: {
-                    loan,
-                },
+                loan,
             });
         }
         catch (error) {
@@ -90,30 +82,28 @@ class LoanController {
             if (search) {
                 query.$or = [
                     { loanNumber: { $regex: search, $options: 'i' } },
-                    { purpose: { $regex: search, $options: 'i' } },
+                    { notes: { $regex: search, $options: 'i' } },
                 ];
             }
             const skip = (page - 1) * limit;
             const [loans, total] = await Promise.all([
                 models_1.Loan.find(query)
                     .populate('memberId', 'fullName email')
-                    .populate('createdBy', 'fullName email')
+                    .populate('enteredBy', 'fullName email')
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit),
                 models_1.Loan.countDocuments(query),
             ]);
-            const totalPages = Math.ceil(total / limit);
+            const pages = Math.ceil(total / limit);
             res.status(200).json({
                 success: true,
-                data: {
-                    loans,
-                    pagination: {
-                        page,
-                        limit,
-                        total,
-                        totalPages,
-                    },
+                loans,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages,
                 },
             });
         }
@@ -130,7 +120,7 @@ class LoanController {
             const { id } = req.params;
             const loan = await models_1.Loan.findById(id)
                 .populate('memberId', 'fullName email')
-                .populate('createdBy', 'fullName email');
+                .populate('enteredBy', 'fullName email');
             if (!loan) {
                 res.status(404).json({
                     success: false,
@@ -139,14 +129,10 @@ class LoanController {
                 return;
             }
             const outstandingBalance = await loan.calculateOutstandingBalance();
-            const paymentHistory = await loan.getPaymentHistory();
             res.status(200).json({
                 success: true,
-                data: {
-                    loan,
-                    outstandingBalance,
-                    paymentHistory,
-                },
+                loan,
+                outstandingBalance,
             });
         }
         catch (error) {
@@ -178,7 +164,7 @@ class LoanController {
             await loan.save();
             await loan.populate([
                 { path: 'memberId', select: 'fullName email' },
-                { path: 'createdBy', select: 'fullName email' },
+                { path: 'enteredBy', select: 'fullName email' },
             ]);
             res.status(200).json({
                 success: true,
@@ -198,7 +184,7 @@ class LoanController {
     }
     async recordPayment(req, res) {
         try {
-            const { loanId } = req.params;
+            const { loan } = req.params;
             const { paymentDate, amount, notes } = req.body;
             if (!amount || amount <= 0) {
                 res.status(400).json({
@@ -207,23 +193,29 @@ class LoanController {
                 });
                 return;
             }
-            const loan = await models_1.Loan.findById(loanId);
-            if (!loan) {
+            if (!paymentDate) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Payment date is required',
+                });
+                return;
+            }
+            const loanExists = await models_1.Loan.findById(loan);
+            if (!loanExists) {
                 res.status(404).json({
                     success: false,
                     message: 'Loan not found',
                 });
                 return;
             }
-            if (loan.status !== models_1.LoanStatus.ACTIVE) {
+            if (loanExists.status !== models_1.LoanStatus.ACTIVE) {
                 res.status(400).json({
                     success: false,
                     message: 'Payments can only be recorded for active loans',
                 });
                 return;
             }
-            const outstandingBalanceBefore = await loan.calculateOutstandingBalance();
-            const paymentAmount = amount;
+            const outstandingBalanceBefore = await loanExists.calculateOutstandingBalance();
             if (amount > outstandingBalanceBefore) {
                 res.status(400).json({
                     success: false,
@@ -231,32 +223,26 @@ class LoanController {
                 });
                 return;
             }
-            const outstandingBalanceAfter = Math.max(0, outstandingBalanceBefore - paymentAmount);
             const payment = new models_1.LoanPayment({
-                loanId,
+                loan,
                 paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
-                amount: paymentAmount,
-                outstandingBalanceAfter,
+                amount,
                 enteredBy: req.user?._id?.toString(),
                 notes,
             });
             await payment.save();
-            if (outstandingBalanceAfter === 0) {
-                loan.status = models_1.LoanStatus.COMPLETED;
-                await loan.save();
+            if (amount === outstandingBalanceBefore) {
+                loanExists.status = models_1.LoanStatus.COMPLETED;
+                await loanExists.save();
             }
             await payment.populate([
-                { path: 'loanId', select: 'loanNumber principalAmount interestRate' },
+                { path: 'loan', select: 'loanNumber principalAmount interestRate' },
                 { path: 'enteredBy', select: 'fullName email' },
             ]);
             res.status(201).json({
                 success: true,
                 message: 'Principal payment recorded successfully',
-                data: {
-                    payment,
-                    outstandingBalanceAfter,
-                    loanCompleted: outstandingBalanceAfter === 0,
-                },
+                payment,
             });
         }
         catch (error) {
@@ -269,11 +255,11 @@ class LoanController {
     }
     async getLoanPayments(req, res) {
         try {
-            const { loanId } = req.params;
+            const { loan } = req.params;
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
-            const loan = await models_1.Loan.findById(loanId);
-            if (!loan) {
+            const loanExists = await models_1.Loan.findById(loan);
+            if (!loanExists) {
                 res.status(404).json({
                     success: false,
                     message: 'Loan not found',
@@ -282,26 +268,22 @@ class LoanController {
             }
             const skip = (page - 1) * limit;
             const [payments, total] = await Promise.all([
-                models_1.LoanPayment.find({ loanId })
+                models_1.LoanPayment.find({ loan })
                     .populate('enteredBy', 'fullName email')
                     .sort({ paymentDate: -1 })
                     .skip(skip)
                     .limit(limit),
-                models_1.LoanPayment.countDocuments({ loanId }),
+                models_1.LoanPayment.countDocuments({ loan }),
             ]);
-            const totalPages = Math.ceil(total / limit);
+            const pages = Math.ceil(total / limit);
             res.status(200).json({
                 success: true,
-                data: {
-                    payments,
-                    pagination: {
-                        page,
-                        limit,
-                        total,
-                        totalPages,
-                        hasNextPage: page < totalPages,
-                        hasPrevPage: page > 1,
-                    },
+                payments,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages,
                 },
             });
         }

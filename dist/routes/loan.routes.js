@@ -13,7 +13,7 @@ router.get('/stats', [auth_middleware_1.authenticate], loan_controller_1.default
 router.put('/:id', [auth_middleware_1.authenticate, auth_middleware_1.requireMemberOnly], loan_controller_1.default.updateLoan);
 router.get('/member/:memberId?', [auth_middleware_1.authenticate], loan_controller_1.default.getMemberLoans);
 router.get('/:id', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanById);
-router.post('/:loanId/payments', [auth_middleware_1.authenticate, auth_middleware_1.requireMemberOnly], loan_controller_1.default.recordPayment);
-router.get('/:loanId/payments', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanPayments);
+router.post('/:loan/payments', [auth_middleware_1.authenticate, auth_middleware_1.requireMemberOnly], loan_controller_1.default.recordPayment);
+router.get('/:loan/payments', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanPayments);
 exports.default = router;
 //# sourceMappingURL=loan.routes.js.map

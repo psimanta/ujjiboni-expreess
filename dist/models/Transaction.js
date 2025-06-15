@@ -64,7 +64,6 @@ const transactionSchema = new mongoose_1.Schema({
 transactionSchema.index({ accountId: 1, createdAt: -1 });
 transactionSchema.index({ type: 1, createdAt: -1 });
 transactionSchema.index({ accountId: 1, type: 1 });
-transactionSchema.index({ enteredBy: 1, createdAt: -1 });
 transactionSchema.index({ transactionDate: -1 });
 transactionSchema.index({ accountId: 1, transactionDate: -1 });
 transactionSchema.statics.findByAccount = function (accountId) {
