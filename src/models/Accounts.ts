@@ -1,8 +1,18 @@
 import { Schema, model, Document, Types, Model } from 'mongoose';
 
+export enum AccountType {
+  CASH = 'cash',
+  SAVINGS = 'savings',
+  FDR = 'fdr',
+  DPS = 'dps',
+  SHANCHAYPATRA = 'shanchaypatra',
+  OTHER = 'other',
+}
+
 // Define interface for the User document (financial account)
 export interface IAccount extends Document {
   name: string;
+  type: AccountType;
   accountHolder: Types.ObjectId;
   isLocked: boolean;
   balance: number;
@@ -27,6 +37,11 @@ const accountSchema = new Schema<IAccount>(
       required: [true, 'Account name is required'],
       trim: true,
       maxlength: [100, 'Account name cannot exceed 100 characters'],
+    },
+    type: {
+      type: String,
+      enum: Object.values(AccountType),
+      required: [true, 'Account type is required'],
     },
     accountHolder: {
       type: Schema.Types.ObjectId,

@@ -40,7 +40,10 @@ export const getAllAccounts = async (req: Request, res: Response) => {
 // GET /accounts/:id - Get account by ID
 export const getAccountById = async (req: Request, res: Response) => {
   try {
-    const account = await Account.findById(req.params.id);
+    const account = await Account.findById(req.params.id).populate(
+      'accountHolder',
+      'fullName email'
+    );
 
     if (!account) {
       return res.status(404).json({
@@ -61,7 +64,7 @@ export const getAccountById = async (req: Request, res: Response) => {
 // POST /accounts - Create new account.
 export const createAccount = async (req: Request, res: Response) => {
   try {
-    const { name, accountHolder, isLocked = false } = req.body;
+    const { name, accountHolder, isLocked = false, type } = req.body;
 
     // Validate required fields
     if (!name || !accountHolder) {
@@ -77,6 +80,7 @@ export const createAccount = async (req: Request, res: Response) => {
       accountHolder,
       isLocked,
       createdBy: req.user?._id?.toString(),
+      type,
     });
 
     const savedAccount = await account.save();
