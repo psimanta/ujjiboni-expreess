@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { ILoanPayment } from './LoanPayment';
 
 export enum LoanStatus {
   ACTIVE = 'ACTIVE',
@@ -26,7 +27,7 @@ export interface ILoan extends Document {
 
   // Instance methods
   calculateOutstandingBalance(): Promise<number>;
-  getPaymentHistory(): Promise<any[]>;
+  getPaymentHistory(): Promise<ILoanPayment[]>;
 }
 
 export interface ILoanModel extends mongoose.Model<ILoan> {
@@ -34,7 +35,14 @@ export interface ILoanModel extends mongoose.Model<ILoan> {
   findByMember(memberId: string): mongoose.Query<ILoan[], ILoan>;
   findActiveLoans(): mongoose.Query<ILoan[], ILoan>;
   findOverdueLoans(): mongoose.Query<ILoan[], ILoan>;
-  getLoanSummary(memberId?: string): Promise<any>;
+  getLoanSummary(memberId?: string): Promise<{
+    totalLoans: number;
+    activeLoans: number;
+    completedLoans: number;
+    defaultedLoans: number;
+    suspendedLoans: number;
+    totalPrincipalAmount: number;
+  }>;
 }
 
 const loanSchema = new Schema<ILoan>(
@@ -87,7 +95,7 @@ const loanSchema = new Schema<ILoan>(
       virtuals: true,
       transform: function (_, ret) {
         // ret.id = ret._id;
-        delete ret._id;
+        // delete ret._id;
         delete ret.__v;
         return ret;
       },
@@ -118,7 +126,7 @@ loanSchema.methods.calculateOutstandingBalance = async function (): Promise<numb
 };
 
 // Instance method to get payment history
-loanSchema.methods.getPaymentHistory = async function (): Promise<any[]> {
+loanSchema.methods.getPaymentHistory = async function (): Promise<ILoanPayment[]> {
   const LoanPayment = mongoose.model('LoanPayment');
 
   return await LoanPayment.find({ loanId: this._id })

@@ -93,20 +93,20 @@ loanPaymentSchema.statics.findByMember = function (memberId) {
         .sort({ paymentDate: -1 });
 };
 loanPaymentSchema.statics.getPaymentSummary = async function (loanId) {
-    const matchStage = {};
+    const query = {};
     if (loanId) {
-        matchStage.loanId = new mongoose_1.default.Types.ObjectId(loanId);
+        query.loanId = new mongoose_1.default.Types.ObjectId(loanId);
     }
     const summary = await this.aggregate([
-        { $match: matchStage },
+        { $match: query },
         {
             $group: {
                 _id: null,
                 totalPayments: { $sum: 1 },
-                totalPrincipalPaid: { $sum: '$principalAmount' },
+                totalPrincipalPaid: { $sum: '$amount' },
                 lastPaymentDate: { $max: '$paymentDate' },
                 firstPaymentDate: { $min: '$paymentDate' },
-                averagePaymentAmount: { $avg: '$principalAmount' },
+                averagePaymentAmount: { $avg: '$amount' },
             },
         },
     ]);

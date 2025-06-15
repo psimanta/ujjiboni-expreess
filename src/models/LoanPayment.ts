@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, FilterQuery, Schema } from 'mongoose';
 
 export interface ILoanPayment extends Document {
   loanId: mongoose.Types.ObjectId;
@@ -14,7 +14,16 @@ export interface ILoanPayment extends Document {
 export interface ILoanPaymentModel extends mongoose.Model<ILoanPayment> {
   findByLoan(loanId: string): mongoose.Query<ILoanPayment[], ILoanPayment>;
   findByMember(memberId: string): mongoose.Query<ILoanPayment[], ILoanPayment>;
-  getPaymentSummary(loanId?: string, memberId?: string): Promise<any>;
+  getPaymentSummary(
+    loanId?: string,
+    memberId?: string
+  ): Promise<{
+    totalPayments: number;
+    totalPrincipalPaid: number;
+    lastPaymentDate: Date | null;
+    firstPaymentDate: Date | null;
+    averagePaymentAmount: number;
+  }>;
 }
 
 const loanPaymentSchema = new Schema<ILoanPayment>(
@@ -87,22 +96,22 @@ loanPaymentSchema.statics.findByMember = function (memberId: string) {
 
 // Static method to get payment summary
 loanPaymentSchema.statics.getPaymentSummary = async function (loanId?: string) {
-  const matchStage: any = {};
+  const query: FilterQuery<ILoanPayment> = {};
 
   if (loanId) {
-    matchStage.loanId = new mongoose.Types.ObjectId(loanId);
+    query.loanId = new mongoose.Types.ObjectId(loanId);
   }
 
   const summary = await this.aggregate([
-    { $match: matchStage },
+    { $match: query },
     {
       $group: {
         _id: null,
         totalPayments: { $sum: 1 },
-        totalPrincipalPaid: { $sum: '$principalAmount' },
+        totalPrincipalPaid: { $sum: '$amount' },
         lastPaymentDate: { $max: '$paymentDate' },
         firstPaymentDate: { $min: '$paymentDate' },
-        averagePaymentAmount: { $avg: '$principalAmount' },
+        averagePaymentAmount: { $avg: '$amount' },
       },
     },
   ]);

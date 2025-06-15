@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { Loan, LoanPayment, User, LoanStatus, LoanType } from '../models';
+import { Loan, LoanPayment, User, LoanStatus, LoanType, ILoan } from '../models';
+import { FilterQuery } from 'mongoose';
 
 export class LoanController {
   // Create a new loan (admin only)
@@ -94,7 +95,7 @@ export class LoanController {
       const search = req.query.search as string;
 
       // Build query
-      const query: any = {};
+      const query: FilterQuery<ILoan> = {};
 
       if (status && Object.values(LoanStatus).includes(status)) {
         query.status = status;

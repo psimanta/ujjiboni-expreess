@@ -1,4 +1,5 @@
 import mongoose, { Document } from 'mongoose';
+import { ILoanPayment } from './LoanPayment';
 export declare enum LoanStatus {
     ACTIVE = "ACTIVE",
     COMPLETED = "COMPLETED"
@@ -21,14 +22,21 @@ export interface ILoan extends Document {
     createdAt: Date;
     updatedAt: Date;
     calculateOutstandingBalance(): Promise<number>;
-    getPaymentHistory(): Promise<any[]>;
+    getPaymentHistory(): Promise<ILoanPayment[]>;
 }
 export interface ILoanModel extends mongoose.Model<ILoan> {
     generateLoanNumber(): Promise<string>;
     findByMember(memberId: string): mongoose.Query<ILoan[], ILoan>;
     findActiveLoans(): mongoose.Query<ILoan[], ILoan>;
     findOverdueLoans(): mongoose.Query<ILoan[], ILoan>;
-    getLoanSummary(memberId?: string): Promise<any>;
+    getLoanSummary(memberId?: string): Promise<{
+        totalLoans: number;
+        activeLoans: number;
+        completedLoans: number;
+        defaultedLoans: number;
+        suspendedLoans: number;
+        totalPrincipalAmount: number;
+    }>;
 }
 declare const Loan: ILoanModel;
 export { Loan };

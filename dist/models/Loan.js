@@ -94,7 +94,6 @@ const loanSchema = new mongoose_1.Schema({
     toJSON: {
         virtuals: true,
         transform: function (_, ret) {
-            delete ret._id;
             delete ret.__v;
             return ret;
         },

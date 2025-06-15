@@ -12,7 +12,13 @@ export interface ILoanPayment extends Document {
 export interface ILoanPaymentModel extends mongoose.Model<ILoanPayment> {
     findByLoan(loanId: string): mongoose.Query<ILoanPayment[], ILoanPayment>;
     findByMember(memberId: string): mongoose.Query<ILoanPayment[], ILoanPayment>;
-    getPaymentSummary(loanId?: string, memberId?: string): Promise<any>;
+    getPaymentSummary(loanId?: string, memberId?: string): Promise<{
+        totalPayments: number;
+        totalPrincipalPaid: number;
+        lastPaymentDate: Date | null;
+        firstPaymentDate: Date | null;
+        averagePaymentAmount: number;
+    }>;
 }
 declare const LoanPayment: ILoanPaymentModel;
 export { LoanPayment };
