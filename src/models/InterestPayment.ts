@@ -54,22 +54,18 @@ const interestPaymentSchema = new Schema<IInterestPayment>(
       type: Schema.Types.ObjectId,
       ref: 'Loan',
       required: true,
-      index: true,
     },
     paymentNumber: {
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     dueDate: {
       type: Date,
       required: true,
-      index: true,
     },
     paymentDate: {
       type: Date,
-      index: true,
     },
     dueAmount: {
       type: Number,
@@ -158,6 +154,7 @@ const interestPaymentSchema = new Schema<IInterestPayment>(
 );
 
 // Indexes for better performance
+interestPaymentSchema.index({ loanId: 1 });
 interestPaymentSchema.index({ loanId: 1, dueDate: 1 });
 interestPaymentSchema.index({ status: 1, dueDate: 1 });
 interestPaymentSchema.index({ dueDate: 1 });
