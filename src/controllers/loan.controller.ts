@@ -169,13 +169,11 @@ export class LoanController {
 
       // Calculate additional loan details
       const outstandingBalance = await loan.calculateOutstandingBalance();
-      const paymentHistory = await loan.getPaymentHistory();
 
       res.status(200).json({
         success: true,
         loan,
         outstandingBalance,
-        paymentHistory,
       });
     } catch (error) {
       console.error('Get loan by ID error:', error);
@@ -298,7 +296,7 @@ export class LoanController {
       await payment.save();
 
       // Update loan status if fully paid
-      if (outstandingBalanceBefore === 0) {
+      if (amount === outstandingBalanceBefore) {
         loanExists.status = LoanStatus.COMPLETED;
         await loanExists.save();
       }

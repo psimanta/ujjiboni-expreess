@@ -29,7 +29,6 @@ export interface ILoan extends Document {
 
   // Instance methods
   calculateOutstandingBalance(): Promise<number>;
-  getPaymentHistory(): Promise<ILoanPayment[]>;
 }
 
 export interface ILoanModel extends mongoose.Model<ILoan> {
@@ -132,7 +131,7 @@ loanSchema.methods.calculateOutstandingBalance = async function (): Promise<numb
   const LoanPayment = mongoose.model('LoanPayment');
 
   const payments = await LoanPayment.aggregate([
-    { $match: { loanId: this._id } },
+    { $match: { loan: this._id } },
     {
       $group: {
         _id: null,
@@ -149,7 +148,7 @@ loanSchema.methods.calculateOutstandingBalance = async function (): Promise<numb
 loanSchema.methods.getPaymentHistory = async function (): Promise<ILoanPayment[]> {
   const LoanPayment = mongoose.model('LoanPayment');
 
-  return await LoanPayment.find({ loanId: this._id })
+  return await LoanPayment.find({ loan: this._id })
     .populate('enteredBy', 'fullName email')
     .sort({ paymentDate: -1 });
 };
