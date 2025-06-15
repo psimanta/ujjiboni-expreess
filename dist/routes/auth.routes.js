@@ -13,5 +13,6 @@ router.post('/request-password-reset', auth_controller_1.default.requestPassword
 router.post('/reset-password', auth_controller_1.default.resetPassword);
 router.get('/profile', auth_middleware_1.authenticate, auth_controller_1.default.getProfile);
 router.post('/change-password', auth_middleware_1.authenticate, auth_controller_1.default.changePassword);
+router.get('/verify-token', auth_middleware_1.authenticate, auth_controller_1.default.checkAuthentication);
 exports.default = router;
 //# sourceMappingURL=auth.routes.js.map

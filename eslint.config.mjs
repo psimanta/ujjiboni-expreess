@@ -19,4 +19,5 @@ export default tseslint.config(eslint.configs.recommended, tseslint.configs.reco
     ],
     'no-unused-vars': 'off',
   },
+  ignores: ['node_modules', 'dist', 'build'],
 });

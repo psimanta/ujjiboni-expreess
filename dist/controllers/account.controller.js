@@ -12,11 +12,18 @@ const getAllAccounts = async (req, res) => {
         if (accountHolder) {
             query.accountHolder = new RegExp(accountHolder, 'i');
         }
-        const accounts = await models_1.Account.find(query).sort({ createdAt: -1 });
-        return res.json({ accounts });
+        const accountsWithBalance = await models_1.Account.find(query)
+            .populate('accountHolder', 'fullName email')
+            .populate('createdBy', 'fullName email');
+        return res.json({
+            success: true,
+            message: 'Accounts fetched successfully',
+            accounts: accountsWithBalance,
+        });
     }
     catch (error) {
         return res.status(500).json({
+            success: false,
             error: 'Failed to fetch accounts',
             message: error instanceof Error ? error.message : 'Unknown error',
         });
@@ -25,7 +32,7 @@ const getAllAccounts = async (req, res) => {
 exports.getAllAccounts = getAllAccounts;
 const getAccountById = async (req, res) => {
     try {
-        const account = await models_1.Account.findById(req.params.id);
+        const account = await models_1.Account.findById(req.params.id).populate('accountHolder', 'fullName email');
         if (!account) {
             return res.status(404).json({
                 error: 'Account not found',
@@ -44,20 +51,23 @@ const getAccountById = async (req, res) => {
 exports.getAccountById = getAccountById;
 const createAccount = async (req, res) => {
     try {
-        const { name, accountHolder, isLocked = false } = req.body;
+        const { name, accountHolder, isLocked = false, type } = req.body;
         if (!name || !accountHolder) {
             return res.status(400).json({
                 error: 'Validation error',
-                message: 'Name and accountHolder are required fields',
+                message: 'name, accountHolder, and createdBy are required fields',
             });
         }
         const account = new models_1.Account({
             name,
             accountHolder,
             isLocked,
+            createdBy: req.user?._id?.toString(),
+            type,
         });
         const savedAccount = await account.save();
         return res.status(201).json({
+            success: true,
             message: 'Account created successfully',
             account: savedAccount,
         });

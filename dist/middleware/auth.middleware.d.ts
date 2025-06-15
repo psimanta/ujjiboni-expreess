@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserRole } from '../models';
+import { UserRole, type IUser } from '../models';
 declare global {
     namespace Express {
         interface Request {
-            user?: any;
+            user?: IUser;
         }
     }
 }

@@ -38,10 +38,9 @@ const transactionSchema = new mongoose_1.Schema({
         maxlength: [500, 'Comment cannot exceed 500 characters'],
     },
     enteredBy: {
-        type: String,
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User',
         required: [true, 'Transaction entered by is required'],
-        trim: true,
-        maxlength: [100, 'Entered by cannot exceed 100 characters'],
     },
     transactionDate: {
         type: Date,
@@ -50,17 +49,13 @@ const transactionSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
     toJSON: {
-        transform: (doc, ret) => {
-            ret.id = ret._id;
-            delete ret._id;
+        transform: (_, ret) => {
             delete ret.__v;
             return ret;
         },
     },
     toObject: {
-        transform: (doc, ret) => {
-            ret.id = ret._id;
-            delete ret._id;
+        transform: (_, ret) => {
             delete ret.__v;
             return ret;
         },

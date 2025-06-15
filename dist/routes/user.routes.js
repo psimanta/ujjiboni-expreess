@@ -8,8 +8,8 @@ const user_controller_1 = __importDefault(require("../controllers/user.controlle
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
 router.post('/', [auth_middleware_1.authenticate, auth_middleware_1.requireAdmin], user_controller_1.default.createUser);
-router.get('/', [auth_middleware_1.authenticate, auth_middleware_1.requireAdmin], user_controller_1.default.getUsers);
-router.get('/stats', [auth_middleware_1.authenticate, auth_middleware_1.requireAdmin], user_controller_1.default.getUserStats);
+router.get('/', [auth_middleware_1.authenticate], user_controller_1.default.getUsers);
+router.get('/stats', [auth_middleware_1.authenticate], user_controller_1.default.getUserStats);
 router.get('/:id', [auth_middleware_1.authenticate], user_controller_1.default.getUserById);
 router.put('/:id', [auth_middleware_1.authenticate, auth_middleware_1.requireAdmin], user_controller_1.default.updateUser);
 router.delete('/:id', [auth_middleware_1.authenticate, auth_middleware_1.requireAdmin], user_controller_1.default.deleteUser);

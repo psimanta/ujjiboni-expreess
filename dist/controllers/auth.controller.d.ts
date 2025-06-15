@@ -6,6 +6,7 @@ export declare class AuthController {
     resetPassword(req: Request, res: Response): Promise<void>;
     getProfile(req: Request, res: Response): Promise<void>;
     changePassword(req: Request, res: Response): Promise<void>;
+    checkAuthentication(req: Request, res: Response): Promise<void>;
 }
 declare const _default: AuthController;
 export default _default;

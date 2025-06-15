@@ -37,7 +37,7 @@ class LoanController {
                 principalAmount,
                 monthlyInterestRate,
                 notes,
-                createdBy: req.user?._id?.toString(),
+                createdBy: req.user?._id,
                 status: models_1.LoanStatus.ACTIVE,
             });
             await loan.save();
@@ -237,7 +237,7 @@ class LoanController {
                 paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
                 amount: paymentAmount,
                 outstandingBalanceAfter,
-                enteredBy: req.user._id,
+                enteredBy: req.user?._id?.toString(),
                 notes,
             });
             await payment.save();
@@ -336,7 +336,7 @@ class LoanController {
     }
     async getMemberLoans(req, res) {
         try {
-            const memberId = req.user.role === 'ADMIN' ? req.params.memberId : req.user._id;
+            const memberId = req.user?.role === 'ADMIN' ? req.params.memberId : req.user?._id?.toString();
             const loans = await models_1.Loan.findByMember(memberId);
             const loansWithDetails = await Promise.all(loans.map(async (loan) => {
                 const outstandingBalance = await loan.calculateOutstandingBalance();

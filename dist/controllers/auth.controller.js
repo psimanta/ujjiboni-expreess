@@ -59,10 +59,8 @@ class AuthController {
             res.status(200).json({
                 success: true,
                 message: 'Login successful',
-                data: {
-                    user: userResponse,
-                    token,
-                },
+                user: userResponse,
+                token,
             });
         }
         catch (error) {
@@ -209,7 +207,7 @@ class AuthController {
                     message: 'Password reset successfully',
                 });
             }
-            catch (jwtError) {
+            catch (_error) {
                 res.status(400).json({
                     success: false,
                     message: 'Invalid or expired reset token',
@@ -236,9 +234,8 @@ class AuthController {
             }
             res.status(200).json({
                 success: true,
-                data: {
-                    user: req.user.toJSON(),
-                },
+                message: 'Profile fetched successfully',
+                user: req.user.toJSON(),
             });
         }
         catch (error) {
@@ -309,6 +306,15 @@ class AuthController {
                 message: 'Internal server error during password change',
             });
         }
+    }
+    async checkAuthentication(req, res) {
+        res.status(200).json({
+            success: true,
+            message: 'User is authenticated',
+            data: {
+                user: req.user,
+            },
+        });
     }
 }
 exports.AuthController = AuthController;

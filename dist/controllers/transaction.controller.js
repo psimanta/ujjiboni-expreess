@@ -64,7 +64,9 @@ const getTransactionsByAccount = async (req, res) => {
     try {
         const { accountId } = req.params;
         const { type, page = 1, limit = 10 } = req.query;
-        const accountExists = await models_1.Account.findById(accountId);
+        const accountExists = await models_1.Account.findById(accountId)
+            .populate('accountHolder', 'fullName email')
+            .populate('createdBy', 'fullName email');
         if (!accountExists) {
             return res.status(404).json({
                 error: 'Account not found',
@@ -77,12 +79,15 @@ const getTransactionsByAccount = async (req, res) => {
         }
         const skip = (Number(page) - 1) * Number(limit);
         const transactions = await models_1.Transaction.find(query)
-            .populate('accountId', 'name accountHolder')
-            .sort({ createdAt: -1 })
+            .sort({ transactionDate: -1 })
+            .populate('enteredBy', 'fullName email')
             .skip(skip)
             .limit(Number(limit));
         const total = await models_1.Transaction.countDocuments(query);
         return res.json({
+            success: true,
+            message: 'Transactions fetched successfully',
+            account: accountExists,
             transactions,
             pagination: {
                 page: Number(page),
@@ -127,6 +132,8 @@ const getAccountBalance = async (req, res) => {
             return acc;
         }, {});
         return res.json({
+            success: true,
+            message: 'Account balance fetched successfully',
             account: {
                 id: account._id,
                 name: account.name,
@@ -151,11 +158,12 @@ const getAccountBalance = async (req, res) => {
 exports.getAccountBalance = getAccountBalance;
 const createTransaction = async (req, res) => {
     try {
-        const { accountId, type, amount, comment, enteredBy, transactionDate } = req.body;
+        const { accountId, type, amount, comment, transactionDate } = req.body;
+        const enteredBy = req.user?._id?.toString();
         if (!accountId || !type || !amount || !comment || !enteredBy || !transactionDate) {
             return res.status(400).json({
                 error: 'Validation error',
-                message: 'accountId, type, amount, comment, enteredBy, and transactionDate are required fields',
+                message: 'accountId, type, amount, comment,  and transactionDate are required fields',
             });
         }
         const account = await models_1.Account.findById(accountId);
@@ -185,9 +193,11 @@ const createTransaction = async (req, res) => {
             enteredBy,
             transactionDate,
         });
+        await account.updateBalance(type === models_1.TransactionType.DEBIT ? -Number(amount) : Number(amount));
         const savedTransaction = await transaction.save();
         await savedTransaction.populate('accountId', 'name accountHolder');
         return res.status(201).json({
+            success: true,
             message: 'Transaction created successfully',
             transaction: savedTransaction,
         });

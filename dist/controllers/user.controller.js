@@ -55,39 +55,20 @@ class UserController {
     }
     async getUsers(req, res) {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
             const role = req.query.role;
-            const search = req.query.search;
             const query = {};
             if (role && Object.values(models_1.UserRole).includes(role)) {
                 query.role = role;
             }
-            if (search) {
-                query.$or = [
-                    { fullName: { $regex: search, $options: 'i' } },
-                    { email: { $regex: search, $options: 'i' } },
-                ];
-            }
-            const skip = (page - 1) * limit;
             const [users, total] = await Promise.all([
-                models_1.User.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+                models_1.User.find(query).sort({ createdAt: -1 }),
                 models_1.User.countDocuments(query),
             ]);
-            const totalPages = Math.ceil(total / limit);
             res.status(200).json({
                 success: true,
-                data: {
-                    users,
-                    pagination: {
-                        page,
-                        limit,
-                        total,
-                        totalPages,
-                        hasNextPage: page < totalPages,
-                        hasPrevPage: page > 1,
-                    },
-                },
+                message: 'Users fetched successfully',
+                users,
+                total,
             });
         }
         catch (error) {
@@ -144,7 +125,7 @@ class UserController {
                 return;
             }
             const isAdmin = req.user.role === models_1.UserRole.ADMIN;
-            const isOwnProfile = req.user._id.toString() === id;
+            const isOwnProfile = req.user?._id?.toString() === id;
             if (!isAdmin && !isOwnProfile) {
                 res.status(403).json({
                     success: false,
@@ -194,7 +175,7 @@ class UserController {
                 });
                 return;
             }
-            if (req.user._id.toString() === id) {
+            if (req.user?._id?.toString() === id) {
                 res.status(400).json({
                     success: false,
                     message: 'You cannot delete your own account',
@@ -233,7 +214,7 @@ class UserController {
                 });
                 return;
             }
-            if (req.user._id.toString() === id) {
+            if (req.user?._id?.toString() === id) {
                 res.status(400).json({
                     success: false,
                     message: 'You cannot change your own status',
