@@ -57,18 +57,30 @@ const interestPaymentSchema = new mongoose_1.Schema({
         required: true,
     },
     paymentDate: {
-        type: Date,
+        type: String,
+        required: true,
+        validate: {
+            validator: function (value) {
+                return /^\d{4}-(?:0[1-9]|1[0-2])-01$/.test(value);
+            },
+            message: 'Payment date must be in YYYY-MM-01 format',
+        },
+    },
+    previousInterestDue: {
+        type: Number,
+        required: true,
+        min: [0, 'Previous interest due must be non-negative'],
+    },
+    dueAfterInterestPayment: {
+        type: Number,
+        required: true,
+        min: [0, 'Due after interest payment must be non-negative'],
     },
     penaltyAmount: {
         type: Number,
         required: true,
         min: [0, 'Penalty amount must be non-negative'],
         default: 0,
-    },
-    dueAmount: {
-        type: Number,
-        required: true,
-        min: [0, 'Due amount must be non-negative'],
     },
     interestAmount: {
         type: Number,
@@ -80,6 +92,11 @@ const interestPaymentSchema = new mongoose_1.Schema({
         required: true,
         min: [0, 'Paid amount must be non-negative'],
         default: 0,
+    },
+    enteredBy: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
     },
 }, {
     timestamps: true,
@@ -108,24 +125,19 @@ interestPaymentSchema.statics.getPaymentSummary = async function (loanId) {
             $group: {
                 _id: '$status',
                 count: { $sum: 1 },
-                totalDue: { $sum: '$dueAmount' },
+                totalInterest: { $sum: '$interestAmount' },
                 totalPaid: { $sum: '$paidAmount' },
             },
         },
     ]);
     const result = {
         totalPayments: 0,
-        pendingPayments: 0,
-        paidPayments: 0,
-        overduePayments: 0,
-        partialPayments: 0,
-        totalDueAmount: 0,
+        totalInterest: 0,
         totalPaidAmount: 0,
-        totalOutstanding: 0,
     };
     summary.forEach(item => {
         result.totalPayments += item.count;
-        result.totalDueAmount += item.totalDue;
+        result.totalInterest += item.totalInterest;
         result.totalPaidAmount += item.totalPaid;
     });
     return result;

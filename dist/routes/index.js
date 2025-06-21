@@ -11,7 +11,6 @@ const transaction_routes_1 = __importDefault(require("./transaction.routes"));
 const auth_routes_1 = __importDefault(require("./auth.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
 const loan_routes_1 = __importDefault(require("./loan.routes"));
-const interestPayment_routes_1 = __importDefault(require("./interestPayment.routes"));
 const router = (0, express_1.Router)();
 router.get('/', (req, res) => {
     res.json({
@@ -42,7 +41,6 @@ router.get('/health', (req, res) => {
 router.use('/auth', auth_routes_1.default);
 router.use('/users', user_routes_1.default);
 router.use('/loans', loan_routes_1.default);
-router.use('/interest-payments', interestPayment_routes_1.default);
 router.use('/accounts', account_routes_1.default);
 router.use('/transactions', transaction_routes_1.default);
 exports.default = router;

@@ -14,11 +14,13 @@ export declare enum PaymentMethod {
 }
 export interface IInterestPayment extends Document {
     loanId: mongoose.Types.ObjectId;
-    paymentDate?: Date;
+    paymentDate?: string;
     penaltyAmount: number;
+    previousInterestDue: number;
+    dueAfterInterestPayment: number;
     interestAmount: number;
-    dueAmount: number;
     paidAmount: number;
+    enteredBy: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -26,7 +28,7 @@ export interface IInterestPaymentModel extends mongoose.Model<IInterestPayment> 
     findByLoan(loanId: string): mongoose.Query<IInterestPayment[], IInterestPayment>;
     getPaymentSummary(loanId?: string): Promise<{
         totalPayments: number;
-        totalDueAmount: number;
+        totalInterest: number;
         totalPaidAmount: number;
     }>;
     generateMonthlyInterest(loanId: string): Promise<IInterestPayment>;
