@@ -1,6 +1,14 @@
 import { Router } from 'express';
 import loanController from '../controllers/loan.controller';
 import { authenticate, requireMemberOnly } from '../middleware/auth.middleware';
+import {
+  recordInterestPayment,
+  getLoanInterestPayments,
+  //   getMemberInterestPayments,
+  //   getInterestPaymentSummary,
+  //   getInterestPaymentById,
+  //   updateInterestPayment,
+} from '../controllers/interestPayment.controller';
 
 const router = Router();
 
@@ -19,5 +27,8 @@ router.get('/:id', [authenticate], loanController.getLoanById); // Get loan by I
 // Payment routes (members can record payments)
 router.post('/:loan/payments', [authenticate, requireMemberOnly], loanController.recordPayment); // Record payment
 router.get('/:loan/payments', [authenticate], loanController.getLoanPayments); // Get loan payments
+
+router.post('/:loan/interests', [authenticate, requireMemberOnly], recordInterestPayment);
+router.get('/:loan/interests', [authenticate], getLoanInterestPayments);
 
 export default router;

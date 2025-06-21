@@ -6,7 +6,6 @@ import transactionRoutes from './transaction.routes';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import loanRoutes from './loan.routes';
-import interestPaymentRoutes from './interestPayment.routes';
 
 const router = Router();
 
@@ -49,9 +48,6 @@ router.use('/users', userRoutes);
 
 // Mount loan management routes
 router.use('/loans', loanRoutes);
-
-// Mount interest payment routes
-router.use('/interest-payments', interestPaymentRoutes);
 
 // Mount account routes
 router.use('/accounts', accountRoutes);
