@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 export declare class AuthController {
     login(req: Request, res: Response): Promise<void>;
-    setupPassword(req: Request, res: Response): Promise<void>;
+    setupPasswordWithOTP(req: Request, res: Response): Promise<void>;
     requestPasswordReset(req: Request, res: Response): Promise<void>;
     resetPassword(req: Request, res: Response): Promise<void>;
     getProfile(req: Request, res: Response): Promise<void>;

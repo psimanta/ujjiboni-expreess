@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InterestPaymentStatus = exports.InterestPayment = exports.LoanPayment = exports.LoanType = exports.LoanStatus = exports.Loan = exports.UserRole = exports.User = exports.TransactionType = exports.Transaction = exports.Account = void 0;
+exports.OTPPurpose = exports.OTPStatus = exports.OTP = exports.InterestPaymentStatus = exports.InterestPayment = exports.LoanPayment = exports.LoanType = exports.LoanStatus = exports.Loan = exports.UserRole = exports.User = exports.TransactionType = exports.Transaction = exports.Account = void 0;
 var Accounts_1 = require("./Accounts");
 Object.defineProperty(exports, "Account", { enumerable: true, get: function () { return Accounts_1.Account; } });
 var Transaction_1 = require("./Transaction");
@@ -18,4 +18,8 @@ Object.defineProperty(exports, "LoanPayment", { enumerable: true, get: function 
 var InterestPayment_1 = require("./InterestPayment");
 Object.defineProperty(exports, "InterestPayment", { enumerable: true, get: function () { return InterestPayment_1.InterestPayment; } });
 Object.defineProperty(exports, "InterestPaymentStatus", { enumerable: true, get: function () { return InterestPayment_1.InterestPaymentStatus; } });
+var OTP_1 = require("./OTP");
+Object.defineProperty(exports, "OTP", { enumerable: true, get: function () { return OTP_1.OTP; } });
+Object.defineProperty(exports, "OTPStatus", { enumerable: true, get: function () { return OTP_1.OTPStatus; } });
+Object.defineProperty(exports, "OTPPurpose", { enumerable: true, get: function () { return OTP_1.OTPPurpose; } });
 //# sourceMappingURL=index.js.map

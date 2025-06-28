@@ -9,6 +9,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const models_1 = require("../models");
 const email_service_1 = __importDefault(require("../services/email.service"));
 const config_1 = __importDefault(require("../config"));
+const OTP_1 = require("../models/OTP");
 const generateToken = (user) => {
     const payload = {
         userId: user._id.toString(),
@@ -71,13 +72,13 @@ class AuthController {
             });
         }
     }
-    async setupPassword(req, res) {
+    async setupPasswordWithOTP(req, res) {
         try {
-            const { userId, password, confirmPassword } = req.body;
-            if (!userId || !password || !confirmPassword) {
+            const { email, otpCode, password, confirmPassword } = req.body;
+            if (!email || !otpCode || !password || !confirmPassword) {
                 res.status(400).json({
                     success: false,
-                    message: 'User ID, password, and confirm password are required',
+                    message: 'Email, OTP code, password, and confirm password are required',
                 });
                 return;
             }
@@ -95,7 +96,7 @@ class AuthController {
                 });
                 return;
             }
-            const user = await models_1.User.findById(userId);
+            const user = await models_1.User.findOne({ email: email.toLowerCase() });
             if (!user) {
                 res.status(404).json({
                     success: false,
@@ -110,20 +111,24 @@ class AuthController {
                 });
                 return;
             }
+            const validOTP = await OTP_1.OTP.verifyOTP(user._id.toString(), otpCode, OTP_1.OTPPurpose.PASSWORD_SETUP);
+            if (!validOTP) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Invalid or expired OTP code',
+                });
+                return;
+            }
             await user.setPassword(password);
             const token = generateToken(user);
-            const userResponse = user.toJSON();
             res.status(200).json({
                 success: true,
                 message: 'Password set successfully',
-                data: {
-                    user: userResponse,
-                    token,
-                },
+                token,
             });
         }
         catch (error) {
-            console.error('Setup password error:', error);
+            console.error('Setup password with OTP error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error during password setup',

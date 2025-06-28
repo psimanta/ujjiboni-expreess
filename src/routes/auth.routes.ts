@@ -6,7 +6,8 @@ const router = Router();
 
 // Public routes (no authentication required)
 router.post('/login', authController.login);
-router.post('/setup-password', authController.setupPassword);
+// router.post('/setup-password', authController.setupPassword); // Legacy endpoint
+router.post('/setup-password-with-otp', authController.setupPasswordWithOTP); // OTP verification from welcome email
 router.post('/request-password-reset', authController.requestPasswordReset);
 router.post('/reset-password', authController.resetPassword);
 

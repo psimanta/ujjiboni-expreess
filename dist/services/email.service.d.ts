@@ -8,7 +8,7 @@ declare class EmailService {
     private transporter;
     constructor();
     sendEmail(options: EmailOptions): Promise<boolean>;
-    sendWelcomeEmail(userEmail: string, fullName: string): Promise<boolean>;
+    sendWelcomeEmail(userEmail: string, fullName: string, otpCode?: string): Promise<boolean>;
     sendPasswordResetEmail(userEmail: string, fullName: string, resetToken: string): Promise<boolean>;
 }
 declare const _default: EmailService;

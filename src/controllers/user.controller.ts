@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IUser, User, UserRole } from '../models';
+import { IUser, User, UserRole, OTP, OTPPurpose } from '../models';
 import emailService from '../services/email.service';
 import { FilterQuery } from 'mongoose';
 
@@ -37,9 +37,23 @@ export class UserController {
 
       await newUser.save();
 
-      // Send welcome email
+      // Generate OTP for password setup
+      let otpCode: string | undefined = undefined;
       try {
-        await emailService.sendWelcomeEmail(newUser.email, newUser.fullName);
+        const otp = await OTP.generateOTP(
+          newUser._id.toString(),
+          OTPPurpose.PASSWORD_SETUP,
+          150000
+        );
+        otpCode = otp.otpCode;
+      } catch (otpError) {
+        console.error('Failed to generate OTP:', otpError);
+        // Continue without OTP - user can still use legacy flow
+      }
+
+      // Send welcome email with OTP
+      try {
+        await emailService.sendWelcomeEmail(newUser.email, newUser.fullName, otpCode);
       } catch (emailError) {
         console.error('Failed to send welcome email:', emailError);
         // Don't fail the user creation if email fails
@@ -47,7 +61,9 @@ export class UserController {
 
       res.status(201).json({
         success: true,
-        message: 'User created successfully. Welcome email sent.',
+        message: otpCode
+          ? 'User created successfully. Welcome email with OTP sent.'
+          : 'User created successfully. Welcome email sent.',
         data: {
           user: newUser.toJSON(),
         },
@@ -348,13 +364,27 @@ export class UserController {
         return;
       }
 
-      // Send welcome email
-      const emailSent = await emailService.sendWelcomeEmail(user.email, user.fullName);
+      // Generate new OTP for password setup (if user is still first login)
+      let otpCode: string | undefined = undefined;
+      if (user.isFirstLogin) {
+        try {
+          const otp = await OTP.generateOTP(user._id.toString(), OTPPurpose.PASSWORD_SETUP, 15);
+          otpCode = otp.otpCode;
+        } catch (otpError) {
+          console.error('Failed to generate OTP:', otpError);
+          // Continue without OTP - user can still use legacy flow
+        }
+      }
+
+      // Send welcome email with OTP (if applicable)
+      const emailSent = await emailService.sendWelcomeEmail(user.email, user.fullName, otpCode);
 
       if (emailSent) {
         res.status(200).json({
           success: true,
-          message: 'Welcome email sent successfully',
+          message: user.isFirstLogin
+            ? 'Welcome email with OTP sent successfully'
+            : 'Welcome email sent successfully',
         });
       } else {
         res.status(500).json({

@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { User, type IUser } from '../models';
 import emailService from '../services/email.service';
 import config from '../config';
+import { OTP, OTPPurpose } from '../models/OTP';
 
 // Simple token generation for now - we'll fix the auth middleware later
 const generateToken = (user: IUser): string => {
@@ -87,16 +88,16 @@ export class AuthController {
     }
   }
 
-  // First-time password setup
-  async setupPassword(req: Request, res: Response): Promise<void> {
+  // // Setup password with OTP verification
+  async setupPasswordWithOTP(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, password, confirmPassword } = req.body;
+      const { email, otpCode, password, confirmPassword } = req.body;
 
       // Validate input
-      if (!userId || !password || !confirmPassword) {
+      if (!email || !otpCode || !password || !confirmPassword) {
         res.status(400).json({
           success: false,
-          message: 'User ID, password, and confirm password are required',
+          message: 'Email, OTP code, password, and confirm password are required',
         });
         return;
       }
@@ -118,7 +119,7 @@ export class AuthController {
       }
 
       // Find user
-      const user = await User.findById(userId);
+      const user = await User.findOne({ email: email.toLowerCase() });
       if (!user) {
         res.status(404).json({
           success: false,
@@ -136,31 +137,110 @@ export class AuthController {
         return;
       }
 
+      // Verify OTP
+      const validOTP = await OTP.verifyOTP(user._id.toString(), otpCode, OTPPurpose.PASSWORD_SETUP);
+      if (!validOTP) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid or expired OTP code',
+        });
+        return;
+      }
+
       // Set password
       await user.setPassword(password);
 
       // Generate token
       const token = generateToken(user);
 
-      // Remove password from response
-      const userResponse = user.toJSON();
-
       res.status(200).json({
         success: true,
         message: 'Password set successfully',
-        data: {
-          user: userResponse,
-          token,
-        },
+        token,
       });
     } catch (error) {
-      console.error('Setup password error:', error);
+      console.error('Setup password with OTP error:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error during password setup',
       });
     }
   }
+
+  // First-time password setup (legacy method - keeping for backwards compatibility)
+  // async setupPassword(req: Request, res: Response): Promise<void> {
+  //   try {
+  //     const { userId, password, confirmPassword } = req.body;
+
+  //     // Validate input
+  //     if (!userId || !password || !confirmPassword) {
+  //       res.status(400).json({
+  //         success: false,
+  //         message: 'User ID, password, and confirm password are required',
+  //       });
+  //       return;
+  //     }
+
+  //     if (password !== confirmPassword) {
+  //       res.status(400).json({
+  //         success: false,
+  //         message: 'Passwords do not match',
+  //       });
+  //       return;
+  //     }
+
+  //     if (password.length < 6) {
+  //       res.status(400).json({
+  //         success: false,
+  //         message: 'Password must be at least 6 characters long',
+  //       });
+  //       return;
+  //     }
+
+  //     // Find user
+  //     const user = await User.findById(userId);
+  //     if (!user) {
+  //       res.status(404).json({
+  //         success: false,
+  //         message: 'User not found',
+  //       });
+  //       return;
+  //     }
+
+  //     // Check if user is indeed a first-time user
+  //     if (!user.isFirstLogin) {
+  //       res.status(400).json({
+  //         success: false,
+  //         message: 'Password has already been set for this user',
+  //       });
+  //       return;
+  //     }
+
+  //     // Set password
+  //     await user.setPassword(password);
+
+  //     // Generate token
+  //     const token = generateToken(user);
+
+  //     // Remove password from response
+  //     const userResponse = user.toJSON();
+
+  //     res.status(200).json({
+  //       success: true,
+  //       message: 'Password set successfully',
+  //       data: {
+  //         user: userResponse,
+  //         token,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error('Setup password error:', error);
+  //     res.status(500).json({
+  //       success: false,
+  //       message: 'Internal server error during password setup',
+  //     });
+  //   }
+  // }
 
   // Request password reset
   async requestPasswordReset(req: Request, res: Response): Promise<void> {

@@ -347,11 +347,11 @@ class LoanController {
             const interestSummary = await models_1.InterestPayment.getPaymentSummary();
             const totalInterestDue = interestSummary.totalInterest - interestSummary.totalPaidAmount;
             const totalDue = totalPrincipalDue + Math.max(0, totalInterestDue);
-            const averageLoanAmount = loanSummary.totalLoans > 0
-                ? loanSummary.totalPrincipalAmount / loanSummary.totalLoans
-                : 0;
+            const averageLoanAmount = loanSummary.totalLoans > 0 ? loanSummary.totalPrincipalAmount / loanSummary.totalLoans : 0;
             const recoveryRate = loanSummary.totalPrincipalAmount > 0
-                ? ((loanSummary.totalPrincipalAmount - totalOutstandingBalance) / loanSummary.totalPrincipalAmount) * 100
+                ? ((loanSummary.totalPrincipalAmount - totalOutstandingBalance) /
+                    loanSummary.totalPrincipalAmount) *
+                    100
                 : 0;
             res.status(200).json({
                 success: true,
@@ -371,9 +371,9 @@ class LoanController {
                     loanBreakdown: {
                         activeLoanBalances: loanBalances,
                         interestPaymentCount: interestSummary.totalPayments,
-                    }
+                    },
                 },
-                message: 'Loan statistics retrieved successfully'
+                message: 'Loan statistics retrieved successfully',
             });
         }
         catch (error) {

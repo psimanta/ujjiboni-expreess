@@ -8,7 +8,7 @@ const auth_controller_1 = __importDefault(require("../controllers/auth.controlle
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
 router.post('/login', auth_controller_1.default.login);
-router.post('/setup-password', auth_controller_1.default.setupPassword);
+router.post('/setup-password-with-otp', auth_controller_1.default.setupPasswordWithOTP);
 router.post('/request-password-reset', auth_controller_1.default.requestPasswordReset);
 router.post('/reset-password', auth_controller_1.default.resetPassword);
 router.get('/profile', auth_middleware_1.authenticate, auth_controller_1.default.getProfile);

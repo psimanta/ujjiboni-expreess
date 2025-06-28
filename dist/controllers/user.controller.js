@@ -31,15 +31,25 @@ class UserController {
                 isFirstLogin: true,
             });
             await newUser.save();
+            let otpCode = undefined;
             try {
-                await email_service_1.default.sendWelcomeEmail(newUser.email, newUser.fullName);
+                const otp = await models_1.OTP.generateOTP(newUser._id.toString(), models_1.OTPPurpose.PASSWORD_SETUP, 150000);
+                otpCode = otp.otpCode;
+            }
+            catch (otpError) {
+                console.error('Failed to generate OTP:', otpError);
+            }
+            try {
+                await email_service_1.default.sendWelcomeEmail(newUser.email, newUser.fullName, otpCode);
             }
             catch (emailError) {
                 console.error('Failed to send welcome email:', emailError);
             }
             res.status(201).json({
                 success: true,
-                message: 'User created successfully. Welcome email sent.',
+                message: otpCode
+                    ? 'User created successfully. Welcome email with OTP sent.'
+                    : 'User created successfully. Welcome email sent.',
                 data: {
                     user: newUser.toJSON(),
                 },
@@ -297,11 +307,23 @@ class UserController {
                 });
                 return;
             }
-            const emailSent = await email_service_1.default.sendWelcomeEmail(user.email, user.fullName);
+            let otpCode = undefined;
+            if (user.isFirstLogin) {
+                try {
+                    const otp = await models_1.OTP.generateOTP(user._id.toString(), models_1.OTPPurpose.PASSWORD_SETUP, 15);
+                    otpCode = otp.otpCode;
+                }
+                catch (otpError) {
+                    console.error('Failed to generate OTP:', otpError);
+                }
+            }
+            const emailSent = await email_service_1.default.sendWelcomeEmail(user.email, user.fullName, otpCode);
             if (emailSent) {
                 res.status(200).json({
                     success: true,
-                    message: 'Welcome email sent successfully',
+                    message: user.isFirstLogin
+                        ? 'Welcome email with OTP sent successfully'
+                        : 'Welcome email sent successfully',
                 });
             }
             else {

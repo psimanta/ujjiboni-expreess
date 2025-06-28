@@ -42,7 +42,7 @@ class EmailService {
     }
   }
 
-  async sendWelcomeEmail(userEmail: string, fullName: string): Promise<boolean> {
+  async sendWelcomeEmail(userEmail: string, fullName: string, otpCode?: string): Promise<boolean> {
     const subject = `Welcome to ${config.app.name}`;
     const html = `
       <!DOCTYPE html>
@@ -68,15 +68,41 @@ class EmailService {
             <p><strong>Status:</strong> First-time login required</p>
           </div>
           
+          ${
+            otpCode
+              ? `
+          <div style="background: white; border: 2px solid #667eea; padding: 30px; margin: 30px 0; border-radius: 10px; text-align: center;">
+            <h3 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 18px;">Your One-Time Password (OTP):</h3>
+            <div style="font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace; margin: 15px 0;">
+              ${otpCode}
+            </div>
+            <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">Use this OTP to set your password during first login</p>
+          </div>
+          
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 0; color: #856404;">
+              <strong>⚠️ Important:</strong> This OTP will expire in 15 minutes. Use it to set your password during first login.
+            </p>
+          </div>
+          
+          <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 0; color: #0c5460;">
+              <strong>🔒 Security Tip:</strong> Never share this OTP with anyone. Our team will never ask for your OTP.
+            </p>
+          </div>
+          `
+              : `
           <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p style="margin: 0; color: #856404;">
               <strong>⚠️ Important:</strong> You will need to set your password during your first login.
             </p>
           </div>
+          `
+          }
         </div>
         
         <div style="text-align: center; margin-bottom: 30px;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login" 
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/setup-password" 
              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
             Login to Your Account
           </a>
@@ -99,7 +125,17 @@ class EmailService {
       Email: ${userEmail}
       Status: First-time login required
       
-      Important: You will need to set your password during your first login.
+      ${
+        otpCode
+          ? `
+      Your One-Time Password (OTP): ${otpCode}
+      
+      Important: This OTP will expire in 15 minutes. Use it to set your password during first login.
+      
+      Security Tip: Never share this OTP with anyone. Our team will never ask for your OTP.
+      `
+          : `Important: You will need to set your password during your first login.`
+      }
       
       Login URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/login
       

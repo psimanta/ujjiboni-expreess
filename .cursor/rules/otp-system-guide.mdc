@@ -1,0 +1,227 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# OTP System for Invited Member Password Setup
+
+## Overview
+The OTP (One-Time Password) system provides secure password setup for invited members using email-based verification. This replaces direct password setup with a more secure, user-friendly flow.
+
+## System Components
+
+### OTP Model ([src/models/OTP.ts](mdc:src/models/OTP.ts))
+Core features:
+- **6-digit numeric codes** (100000-999999)
+- **15-minute expiration** by default (configurable)
+- **3 verification attempts** maximum
+- **Auto-cleanup** via MongoDB TTL index
+- **Multiple purposes** supported (password setup, reset, email verification)
+
+#### OTP Status Flow
+```
+PENDING → USED (successful verification)
+PENDING → EXPIRED (timeout or max attempts)
+```
+
+#### Key Methods
+```typescript
+// Generate new OTP
+const otp = await OTP.generateOTP(userId, OTPPurpose.PASSWORD_SETUP, 15);
+
+// Verify OTP
+const validOTP = await OTP.verifyOTP(userId, otpCode, OTPPurpose.PASSWORD_SETUP);
+
+// Find valid OTP
+const otp = await OTP.findValidOTP(userId, OTPPurpose.PASSWORD_SETUP);
+
+// Cleanup expired OTPs
+const deletedCount = await OTP.cleanupExpiredOTPs();
+```
+
+### Email Service Integration ([src/services/email.service.ts](mdc:src/services/email.service.ts))
+Professional OTP email features:
+- **Branded HTML design** with gradient headers
+- **Large, clear OTP display** with monospace font
+- **Security warnings** and best practices
+- **Expiration notices** (15 minutes)
+- **Plain text fallback** for all email clients
+- **Anti-phishing messaging**
+
+### Authentication Controller ([src/controllers/auth.controller.ts](mdc:src/controllers/auth.controller.ts))
+Two new endpoints for OTP-based flow:
+1. **Send OTP**: `sendPasswordSetupOTP()`
+2. **Verify & Setup**: `setupPasswordWithOTP()`
+
+## API Endpoints
+
+### Setup Password with OTP
+**Endpoint**: `POST /auth/setup-password-with-otp`
+**Purpose**: Verify OTP and set password
+
+#### Request Body
+```json
+{
+  "userId": "user_id_here",
+  "otpCode": "123456",
+  "password": "securePassword123",
+  "confirmPassword": "securePassword123"
+}
+```
+
+#### Success Response
+```json
+{
+  "success": true,
+  "message": "Password set successfully",
+  "data": {
+    "user": {
+      "_id": "user_id_here",
+      "fullName": "John Doe",
+      "email": "member@example.com",
+      "role": "MEMBER",
+      "isFirstLogin": false
+    },
+    "token": "jwt_token_here"
+  }
+}
+```
+
+#### Validation & Security Checks
+- All required fields present
+- Passwords match and meet minimum length (6 characters)
+- User exists and is first-time login
+- OTP is valid, not expired, within attempt limits
+- OTP matches and purpose is `PASSWORD_SETUP`
+
+## User Flow for Invited Members
+
+### Traditional Flow (Legacy)
+1. Admin creates user account
+2. User receives welcome email with login instructions
+3. User attempts login → gets "first-time login" response with `userId`
+4. User calls `/auth/setup-password` with `userId` and password
+5. User receives JWT token and can access system
+
+### New OTP-Based Flow (Recommended)
+1. Admin creates user account → System automatically generates OTP
+2. User receives welcome email with 6-digit OTP (expires in 15 minutes)
+3. User sets password via `/auth/setup-password-with-otp` with OTP
+4. User receives JWT token and can access system
+
+## Security Features
+
+### OTP Generation
+- **Cryptographically random** 6-digit codes
+- **Automatic invalidation** of previous pending OTPs
+- **Short expiration time** (15 minutes default)
+- **Limited attempts** (3 tries maximum)
+
+### Email Security
+- **Anti-phishing warnings** in email content
+- **No clickable links** for OTP (user must manually enter)
+- **Clear expiration messaging**
+- **Security tips** included in email
+
+### Database Security
+- **OTP codes not exposed** in JSON responses
+- **Automatic cleanup** of expired/used OTPs
+- **Indexed queries** for performance
+- **Attempt tracking** and limits
+
+## Error Handling
+
+### Common Error Scenarios
+```json
+// User not found
+{
+  "success": false,
+  "message": "User not found"
+}
+
+// Password already set
+{
+  "success": false,
+  "message": "Password has already been set for this user"
+}
+
+// Invalid/expired OTP
+{
+  "success": false,
+  "message": "Invalid or expired OTP code"
+}
+
+// Email sending failure
+{
+  "success": false,
+  "message": "Failed to send OTP email"
+}
+
+// Validation errors
+{
+  "success": false,
+  "message": "Password must be at least 6 characters long"
+}
+```
+
+## Technical Implementation Details
+
+### Database Schema
+```typescript
+{
+  userId: ObjectId,           // Reference to User
+  otpCode: String,           // 6-digit code (not exposed in JSON)
+  purpose: Enum,             // PASSWORD_SETUP, PASSWORD_RESET, etc.
+  status: Enum,              // PENDING, USED, EXPIRED
+  expiresAt: Date,           // TTL index for auto-cleanup
+  attempts: Number,          // Current verification attempts
+  maxAttempts: Number,       // Maximum allowed attempts (default: 3)
+  usedAt: Date,             // Timestamp when OTP was successfully used
+  createdAt: Date,          // Auto-generated
+  updatedAt: Date           // Auto-generated
+}
+```
+
+### Performance Optimizations
+- **Compound indexes** on `userId + purpose + status`
+- **TTL index** on `expiresAt` for automatic cleanup
+- **Efficient aggregation** for expired OTP cleanup
+- **Single query verification** with attempt tracking
+
+### Environment Variables Required
+```env
+# SMTP Configuration for OTP emails
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM="Ujjiboni <noreply@ujjiboni.com>"
+
+# Frontend URL for email links
+FRONTEND_URL=http://localhost:3000
+```
+
+## Maintenance & Monitoring
+
+### Cleanup Recommendations
+- Run `OTP.cleanupExpiredOTPs()` periodically (daily cron job)
+- Monitor OTP generation rates for abuse detection
+- Track email delivery success rates
+- Monitor failed verification attempts
+
+### Logging & Monitoring
+- Log OTP generation events (without codes)
+- Track verification success/failure rates
+- Monitor email delivery failures
+- Alert on suspicious patterns (rapid OTP requests)
+
+## Future Enhancements
+
+### Potential Features
+- **SMS OTP support** for multi-channel verification
+- **Rate limiting** for OTP requests per user/IP
+- **Admin dashboard** for OTP management
+- **Audit trail** for security compliance
+- **Configurable OTP length** and expiry times
+- **Backup codes** for emergency access
