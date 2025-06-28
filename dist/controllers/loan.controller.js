@@ -295,43 +295,22 @@ class LoanController {
             });
         }
     }
-    async getLoanStats(req, res) {
-        try {
-            const memberId = req.query.memberId;
-            const loanSummary = await models_1.Loan.getLoanSummary(memberId);
-            const paymentSummary = await models_1.LoanPayment.getPaymentSummary(undefined, memberId);
-            res.status(200).json({
-                success: true,
-                data: {
-                    loanSummary,
-                    paymentSummary,
-                },
-            });
-        }
-        catch (error) {
-            console.error('Get loan stats error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error while fetching loan statistics',
-            });
-        }
-    }
     async getMemberLoans(req, res) {
         try {
-            const memberId = req.user?.role === 'ADMIN' ? req.params.memberId : req.user?._id?.toString();
+            const memberId = req.user?._id?.toString();
             const loans = await models_1.Loan.findByMember(memberId);
             const loansWithDetails = await Promise.all(loans.map(async (loan) => {
                 const outstandingBalance = await loan.calculateOutstandingBalance();
+                const interestPaymentSummary = await models_1.InterestPayment.getPaymentSummary(loan._id.toString());
                 return {
                     ...loan.toJSON(),
                     outstandingBalance,
+                    interestPaymentSummary,
                 };
             }));
             res.status(200).json({
                 success: true,
-                data: {
-                    loans: loansWithDetails,
-                },
+                loans: loansWithDetails,
             });
         }
         catch (error) {
@@ -339,6 +318,69 @@ class LoanController {
             res.status(500).json({
                 success: false,
                 message: 'Internal server error while fetching member loans',
+            });
+        }
+    }
+    async getLoanStats(req, res) {
+        try {
+            const loanSummary = await models_1.Loan.getLoanSummary();
+            const activeLoans = await models_1.Loan.find({ status: models_1.LoanStatus.ACTIVE });
+            let totalOutstandingBalance = 0;
+            const loanBalances = await Promise.all(activeLoans.map(async (loan) => {
+                const outstandingBalance = await loan.calculateOutstandingBalance();
+                totalOutstandingBalance += outstandingBalance;
+                return {
+                    loanId: loan._id,
+                    loanNumber: loan.loanNumber,
+                    principalAmount: loan.principalAmount,
+                    outstandingBalance,
+                };
+            }));
+            const allLoans = await models_1.Loan.find({});
+            let totalPrincipalDue = 0;
+            await Promise.all(allLoans.map(async (loan) => {
+                if (loan.status === models_1.LoanStatus.ACTIVE) {
+                    const outstandingBalance = await loan.calculateOutstandingBalance();
+                    totalPrincipalDue += outstandingBalance;
+                }
+            }));
+            const interestSummary = await models_1.InterestPayment.getPaymentSummary();
+            const totalInterestDue = interestSummary.totalInterest - interestSummary.totalPaidAmount;
+            const totalDue = totalPrincipalDue + Math.max(0, totalInterestDue);
+            const averageLoanAmount = loanSummary.totalLoans > 0
+                ? loanSummary.totalPrincipalAmount / loanSummary.totalLoans
+                : 0;
+            const recoveryRate = loanSummary.totalPrincipalAmount > 0
+                ? ((loanSummary.totalPrincipalAmount - totalOutstandingBalance) / loanSummary.totalPrincipalAmount) * 100
+                : 0;
+            res.status(200).json({
+                success: true,
+                data: {
+                    totalLoans: loanSummary.totalLoans,
+                    activeLoans: loanSummary.activeLoans,
+                    completedLoans: loanSummary.completedLoans,
+                    totalPrincipalAmount: loanSummary.totalPrincipalAmount,
+                    totalOutstandingBalance,
+                    totalPrincipalDue,
+                    totalInterestGenerated: interestSummary.totalInterest,
+                    totalInterestPaid: interestSummary.totalPaidAmount,
+                    totalInterestDue: Math.max(0, totalInterestDue),
+                    totalDue,
+                    averageLoanAmount: Math.round(averageLoanAmount),
+                    recoveryRate: Math.round(recoveryRate * 100) / 100,
+                    loanBreakdown: {
+                        activeLoanBalances: loanBalances,
+                        interestPaymentCount: interestSummary.totalPayments,
+                    }
+                },
+                message: 'Loan statistics retrieved successfully'
+            });
+        }
+        catch (error) {
+            console.error('Get loan stats error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error while fetching loan statistics',
             });
         }
     }

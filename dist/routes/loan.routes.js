@@ -10,9 +10,9 @@ const interestPayment_controller_1 = require("../controllers/interestPayment.con
 const router = (0, express_1.Router)();
 router.post('/', [auth_middleware_1.authenticate, auth_middleware_1.requireMemberOnly], loan_controller_1.default.createLoan);
 router.get('/', [auth_middleware_1.authenticate], loan_controller_1.default.getLoans);
-router.get('/stats', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanStats);
 router.put('/:id', [auth_middleware_1.authenticate, auth_middleware_1.requireMemberOnly], loan_controller_1.default.updateLoan);
-router.get('/member/:memberId?', [auth_middleware_1.authenticate], loan_controller_1.default.getMemberLoans);
+router.get('/stats', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanStats);
+router.get('/member/stats', [auth_middleware_1.authenticate], loan_controller_1.default.getMemberLoans);
 router.get('/:id', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanById);
 router.post('/:loan/payments', [auth_middleware_1.authenticate, auth_middleware_1.requireMemberOnly], loan_controller_1.default.recordPayment);
 router.get('/:loan/payments', [auth_middleware_1.authenticate], loan_controller_1.default.getLoanPayments);

@@ -18,6 +18,7 @@ const router = Router();
 router.post('/', [authenticate, requireMemberOnly], loanController.createLoan); // Create loan
 router.get('/', [authenticate], loanController.getLoans); // Get all loans with filtering
 router.put('/:id', [authenticate, requireMemberOnly], loanController.updateLoan); // Update loan
+router.get('/stats', [authenticate], loanController.getLoanStats); // Get loan stats
 
 // Admin and member routes (members can view their own loans)
 router.get('/member/stats', [authenticate], loanController.getMemberLoans); // Get member's loans

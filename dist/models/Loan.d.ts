@@ -10,6 +10,7 @@ export declare enum LoanType {
     EDUCATION = "EDUCATION"
 }
 export interface ILoan extends Document {
+    _id: mongoose.Types.ObjectId;
     memberId: mongoose.Types.ObjectId;
     loanType: LoanType;
     loanNumber: string;

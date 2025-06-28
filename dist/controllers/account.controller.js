@@ -2,9 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteAccount = exports.unlockAccount = exports.lockAccount = exports.updateAccount = exports.createAccount = exports.getAccountById = exports.getAllAccounts = void 0;
 const models_1 = require("../models");
+const sortOrderMap = {
+    asc: 1,
+    desc: -1,
+};
 const getAllAccounts = async (req, res) => {
     try {
-        const { isLocked, accountHolder } = req.query;
+        const { isLocked, accountHolder, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
         const query = {};
         if (typeof isLocked !== 'undefined') {
             query.isLocked = isLocked === 'true';
@@ -14,7 +18,8 @@ const getAllAccounts = async (req, res) => {
         }
         const accountsWithBalance = await models_1.Account.find(query)
             .populate('accountHolder', 'fullName email')
-            .populate('createdBy', 'fullName email');
+            .populate('createdBy', 'fullName email')
+            .sort({ [sortBy]: sortOrderMap[sortOrder] });
         return res.json({
             success: true,
             message: 'Accounts fetched successfully',

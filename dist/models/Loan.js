@@ -155,7 +155,7 @@ loanSchema.statics.generateLoanNumber = async function () {
     return `${prefix}${sequence.toString().padStart(4, '0')}`;
 };
 loanSchema.statics.findByMember = function (memberId) {
-    return this.find({ memberId })
+    return this.find({ memberId, status: LoanStatus.ACTIVE })
         .populate('memberId', 'fullName email')
         .populate('enteredBy', 'fullName email')
         .sort({ createdAt: -1 });

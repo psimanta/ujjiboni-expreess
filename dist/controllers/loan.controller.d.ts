@@ -6,8 +6,8 @@ export declare class LoanController {
     updateLoan(req: Request, res: Response): Promise<void>;
     recordPayment(req: Request, res: Response): Promise<void>;
     getLoanPayments(req: Request, res: Response): Promise<void>;
-    getLoanStats(req: Request, res: Response): Promise<void>;
     getMemberLoans(req: Request, res: Response): Promise<void>;
+    getLoanStats(req: Request, res: Response): Promise<void>;
 }
 declare const _default: LoanController;
 export default _default;

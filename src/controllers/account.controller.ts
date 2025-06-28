@@ -2,10 +2,15 @@ import { Request, Response } from 'express';
 import { Account, IAccount } from '../models';
 import { FilterQuery } from 'mongoose';
 
+const sortOrderMap: Record<string, 1 | -1> = {
+  asc: 1,
+  desc: -1,
+};
+
 // GET /accounts - Get all accounts (financial accounts)
 export const getAllAccounts = async (req: Request, res: Response) => {
   try {
-    const { isLocked, accountHolder } = req.query;
+    const { isLocked, accountHolder, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
     // Build match stage for filtering
     const query: FilterQuery<IAccount> = {};
@@ -19,7 +24,8 @@ export const getAllAccounts = async (req: Request, res: Response) => {
     // Get accounts with balance
     const accountsWithBalance = await Account.find(query)
       .populate('accountHolder', 'fullName email')
-      .populate('createdBy', 'fullName email');
+      .populate('createdBy', 'fullName email')
+      .sort({ [sortBy as string]: sortOrderMap[sortOrder as string] });
 
     // Use aggregation to join accounts with their calculated balance
 

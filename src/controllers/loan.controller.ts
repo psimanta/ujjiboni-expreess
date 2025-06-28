@@ -405,6 +405,106 @@ export class LoanController {
       });
     }
   }
+
+  // Get loan stats
+  async getLoanStats(req: Request, res: Response): Promise<void> {
+    try {
+      // Get basic loan summary using the existing static method
+      const loanSummary = await Loan.getLoanSummary();
+
+      // Get all active loans to calculate total outstanding balance
+      const activeLoans = await Loan.find({ status: LoanStatus.ACTIVE });
+
+      // Calculate total outstanding balance for active loans
+      let totalOutstandingBalance = 0;
+      const loanBalances = await Promise.all(
+        activeLoans.map(async loan => {
+          const outstandingBalance = await loan.calculateOutstandingBalance();
+          totalOutstandingBalance += outstandingBalance;
+          return {
+            loanId: loan._id,
+            loanNumber: loan.loanNumber,
+            principalAmount: loan.principalAmount,
+            outstandingBalance,
+          };
+        })
+      );
+
+      // Get all loans to calculate total due (principal + interest)
+      const allLoans = await Loan.find({});
+
+      // Calculate total principal due across all loans
+      let totalPrincipalDue = 0;
+      await Promise.all(
+        allLoans.map(async loan => {
+          if (loan.status === LoanStatus.ACTIVE) {
+            const outstandingBalance = await loan.calculateOutstandingBalance();
+            totalPrincipalDue += outstandingBalance;
+          }
+        })
+      );
+
+      // Get interest payment summary for all loans
+      const interestSummary = await InterestPayment.getPaymentSummary();
+
+      // Calculate total interest due (interest amount - paid amount)
+      const totalInterestDue = interestSummary.totalInterest - interestSummary.totalPaidAmount;
+
+      // Total due is principal due + interest due
+      const totalDue = totalPrincipalDue + Math.max(0, totalInterestDue);
+
+      // Calculate additional statistics
+      const averageLoanAmount =
+        loanSummary.totalLoans > 0 ? loanSummary.totalPrincipalAmount / loanSummary.totalLoans : 0;
+
+      const recoveryRate =
+        loanSummary.totalPrincipalAmount > 0
+          ? ((loanSummary.totalPrincipalAmount - totalOutstandingBalance) /
+              loanSummary.totalPrincipalAmount) *
+            100
+          : 0;
+
+      res.status(200).json({
+        success: true,
+        data: {
+          // Basic loan counts and amounts
+          totalLoans: loanSummary.totalLoans,
+          activeLoans: loanSummary.activeLoans,
+          completedLoans: loanSummary.completedLoans,
+          totalPrincipalAmount: loanSummary.totalPrincipalAmount,
+
+          // Outstanding balance statistics
+          totalOutstandingBalance,
+          totalPrincipalDue,
+
+          // Interest statistics
+          totalInterestGenerated: interestSummary.totalInterest,
+          totalInterestPaid: interestSummary.totalPaidAmount,
+          totalInterestDue: Math.max(0, totalInterestDue),
+
+          // Combined totals
+          totalDue, // Total principal + interest due
+
+          // Calculated metrics
+          averageLoanAmount: Math.round(averageLoanAmount),
+          recoveryRate: Math.round(recoveryRate * 100) / 100, // Round to 2 decimal places
+
+          // Detailed breakdown (optional, for admin insights)
+          loanBreakdown: {
+            activeLoanBalances: loanBalances,
+            interestPaymentCount: interestSummary.totalPayments,
+          },
+        },
+        message: 'Loan statistics retrieved successfully',
+      });
+    } catch (error) {
+      console.error('Get loan stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching loan statistics',
+      });
+    }
+  }
 }
 
 export default new LoanController();

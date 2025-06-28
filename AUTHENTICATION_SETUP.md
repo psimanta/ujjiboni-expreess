@@ -43,7 +43,7 @@ SMTP_PASS=your-app-password
 SMTP_FROM="Ujjiboni Express" <noreply@ujjiboni.com>
 
 # Frontend URL (for email links)
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=https://ujjiboni-app.vercel.app/
 
 # API Configuration
 API_KEY=your-api-key-if-needed
