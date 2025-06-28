@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Loan, LoanPayment, User, LoanStatus, LoanType, ILoan } from '../models';
+import { Loan, LoanPayment, User, LoanStatus, LoanType, ILoan, InterestPayment } from '../models';
 import { FilterQuery } from 'mongoose';
 
 export class LoanController {
@@ -370,34 +370,10 @@ export class LoanController {
     }
   }
 
-  // Get loan statistics
-  async getLoanStats(req: Request, res: Response): Promise<void> {
-    try {
-      const memberId = req.query.memberId as string;
-
-      const loanSummary = await Loan.getLoanSummary(memberId);
-      const paymentSummary = await LoanPayment.getPaymentSummary(undefined, memberId);
-
-      res.status(200).json({
-        success: true,
-        data: {
-          loanSummary,
-          paymentSummary,
-        },
-      });
-    } catch (error) {
-      console.error('Get loan stats error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error while fetching loan statistics',
-      });
-    }
-  }
-
   // Get member's loans (for members to view their own loans)
   async getMemberLoans(req: Request, res: Response): Promise<void> {
     try {
-      const memberId = req.user?.role === 'ADMIN' ? req.params.memberId : req.user?._id?.toString();
+      const memberId = req.user?._id?.toString();
 
       const loans = await Loan.findByMember(memberId as string);
 
@@ -405,19 +381,21 @@ export class LoanController {
       const loansWithDetails = await Promise.all(
         loans.map(async loan => {
           const outstandingBalance = await loan.calculateOutstandingBalance();
+          const interestPaymentSummary = await InterestPayment.getPaymentSummary(
+            loan._id.toString()
+          );
 
           return {
             ...loan.toJSON(),
             outstandingBalance,
+            interestPaymentSummary,
           };
         })
       );
 
       res.status(200).json({
         success: true,
-        data: {
-          loans: loansWithDetails,
-        },
+        loans: loansWithDetails,
       });
     } catch (error) {
       console.error('Get member loans error:', error);

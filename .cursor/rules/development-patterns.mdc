@@ -1,0 +1,213 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Patterns & Best Practices
+
+## Code Organization Principles
+
+### MVC Architecture
+- **Controllers** ([src/controllers/](mdc:src/controllers)): Handle HTTP requests and responses
+- **Models** ([src/models/](mdc:src/models)): Define data structures and business logic
+- **Routes** ([src/routes/](mdc:src/routes)): Define API endpoints and middleware chains
+- **Services** ([src/services/](mdc:src/services)): Reusable business logic and external integrations
+
+### Middleware Stack
+All middleware is organized in [src/middleware/](mdc:src/middleware):
+- **Security**: Helmet, CORS, rate limiting
+- **Authentication**: JWT verification and role-based access
+- **Request Processing**: Body parsing, logging, validation
+- **Error Handling**: Centralized error responses
+
+## Database Patterns
+
+### Mongoose Schema Design
+- Use TypeScript interfaces for type safety
+- Implement both instance and static methods
+- Add proper indexing for performance
+- Include validation at schema level
+
+### Example Pattern (from [src/models/Loan.ts](mdc:src/models/Loan.ts)):
+```typescript
+// Interface defines the structure
+export interface ILoan extends Document {
+  // properties...
+  calculateOutstandingBalance(): Promise<number>;
+}
+
+// Model interface for static methods
+export interface ILoanModel extends mongoose.Model<ILoan> {
+  generateLoanNumber(): Promise<string>;
+  findByMember(memberId: string): mongoose.Query<ILoan[], ILoan>;
+}
+
+// Schema with validation
+const loanSchema = new Schema<ILoan>({
+  // fields with validation...
+});
+
+// Instance methods
+loanSchema.methods.calculateOutstandingBalance = async function() {
+  // implementation...
+};
+
+// Static methods
+loanSchema.statics.generateLoanNumber = async function() {
+  // implementation...
+};
+```
+
+## Authentication Flow
+
+### JWT Token Structure
+```typescript
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role: UserRole;
+  iat?: number;
+  exp?: number;
+}
+```
+
+### Middleware Chain Pattern
+```typescript
+// Example from loan routes
+router.post('/', [authenticate, requireMemberOnly], loanController.createLoan);
+```
+
+## API Response Conventions
+
+### Success Response Format
+```typescript
+{
+  success: true,
+  data: {}, // actual data
+  message?: string,
+  pagination?: {} // pagination, etc.
+}
+```
+
+### Error Response Format
+```typescript
+{
+  success: false,
+  message: string,
+  error?: string, // detailed error for development
+  code?: string // error code for client handling
+}
+```
+
+## Validation Patterns
+
+### Schema-Level Validation
+- Use Mongoose validators for data integrity
+- Custom validators for business rules
+- Proper error messages for user feedback
+
+### Date Format Validation
+```typescript
+validate: {
+  validator: function (value: string) {
+    return /^\d{4}-(?:0[1-9]|1[0-2])-01$/.test(value);
+  },
+  message: 'Date must be in YYYY-MM-01 format'
+}
+```
+
+## Error Handling Strategies
+
+### Async Error Handling
+- Always use try-catch blocks in async functions
+- Delegate to error middleware for consistent responses
+- Log errors with appropriate detail level
+
+### Graceful Degradation
+- Database connection failures
+- External service timeouts
+- Validation errors with helpful messages
+
+## Business Logic Patterns
+
+### Loan Number Generation
+Auto-increment within year using format `LN{YEAR}{0001}`:
+```typescript
+// From Loan model static method
+const currentYear = new Date().getFullYear();
+const prefix = `LN${currentYear}`;
+const lastLoan = await this.findOne({
+  loanNumber: { $regex: `^${prefix}` }
+}).sort({ loanNumber: -1 });
+```
+
+### Balance Calculations
+Use aggregation for accurate calculations:
+```typescript
+const payments = await LoanPayment.aggregate([
+  { $match: { loan: this._id } },
+  { $group: { _id: null, totalPaid: { $sum: '$amount' } } }
+]);
+```
+
+## TypeScript Best Practices
+
+### Type Definitions
+- Define interfaces for all data structures
+- Use enums for status and type fields
+- Extend Express types for custom properties
+
+### Model Exports
+Centralized exports from [src/models/index.ts](mdc:src/models/index.ts):
+```typescript
+export { Loan, LoanStatus, LoanType, type ILoan } from './Loan';
+```
+
+## Security Considerations
+
+### Authentication Middleware
+- Verify JWT tokens on protected routes
+- Check user existence after token verification
+- Handle token expiration gracefully
+
+### Role-Based Access Control
+- Separate middleware for different permission levels
+- Clear separation between admin and member actions
+- Consistent error messages for unauthorized access
+
+## Testing Patterns
+
+### Environment Setup
+- Use separate test database
+- Mock external services
+- Proper test data cleanup
+
+### API Testing Structure
+- Test authentication flows
+- Validate response formats
+- Check error handling scenarios
+
+## Performance Optimization
+
+### Database Indexes
+- Index frequently queried fields
+- Compound indexes for complex queries
+- Monitor query performance
+
+### Aggregation Pipelines
+- Use for complex calculations
+- Optimize pipeline stages
+- Consider memory usage for large datasets
+
+## Deployment Considerations
+
+### Environment Variables
+All configuration through [src/config/index.ts](mdc:src/config/index.ts):
+- Database connection strings
+- JWT secrets
+- API keys and external service URLs
+
+### Process Management
+- Graceful shutdown handling
+- Health check endpoints
+- Proper logging for production debugging

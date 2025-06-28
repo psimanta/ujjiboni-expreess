@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Ujjiboni Express - Loan Management System Guide
+
+## Project Overview
+Ujjiboni Express is a TypeScript-based Express.js application for managing loans, accounts, transactions, and users. It's designed as a financial management system with role-based access control.
+
+## Project Architecture
+
+### Entry Point
+The main application entry point is [src/index.ts](mdc:src/index.ts), which:
+- Initializes Express application with middleware
+- Sets up database connection using singleton pattern
+- Configures graceful shutdown handlers
+- Starts the server with proper error handling
+
+### Configuration
+Application configuration is centralized in [src/config/index.ts](mdc:src/config/index.ts) using environment variables for:
+- Server settings (port, environment)
+- Database connection details
+- JWT authentication settings
+- Security configurations
+
+## Database Models & Relationships
+
+### Core Models
+All models are exported from [src/models/index.ts](mdc:src/models/index.ts):
+
+#### User Model ([src/models/User.ts](mdc:src/models/User.ts))
+- **Roles**: `ADMIN`, `MEMBER`
+- **Key fields**: fullName, email, password, role, status
+- **Relationships**: Referenced by loans, accounts, transactions
+
+#### Loan Model ([src/models/Loan.ts](mdc:src/models/Loan.ts))
+- **Status**: `ACTIVE`, `COMPLETED`
+- **Types**: `PERSONAL`, `BUSINESS`, `EMERGENCY`, `EDUCATION`
+- **Key features**:
+  - Auto-generated loan numbers (format: `LN{YEAR}{0001}`)
+  - Monthly interest rate calculations
+  - Outstanding balance calculations via `calculateOutstandingBalance()`
+  - Payment history tracking via `getPaymentHistory()`
+
+#### Account Model ([src/models/Accounts.ts](mdc:src/models/Accounts.ts))
+- Manages member financial accounts
+- Links to users and tracks balances
+
+#### Transaction Model ([src/models/Transaction.ts](mdc:src/models/Transaction.ts))
+- Records all financial transactions
+- Supports multiple transaction types
+
+#### Interest & Payment Models
+- **LoanPayment** ([src/models/LoanPayment.ts](mdc:src/models/LoanPayment.ts)): Principal payments
+- **InterestPayment** ([src/models/InterestPayment.ts](mdc:src/models/InterestPayment.ts)): Interest payments with status tracking
+
+## Authentication & Authorization
+
+### Middleware ([src/middleware/auth.middleware.ts](mdc:src/middleware/auth.middleware.ts))
+- **`authenticate`**: JWT-based authentication using Bearer tokens
+- **`requireAdmin`**: Admin-only access control
+- **`requireMember`**: Member or Admin access
+- **`requireMemberOnly`**: Member-only access (excludes admin)
+
+### JWT Implementation
+- Uses `jsonwebtoken` library with configurable expiration
+- Payload includes: `userId`, `email`, `role`
+- Extends Express Request interface to include `user` property
+
+## API Routes Structure
+
+### Route Organization ([src/routes/index.ts](mdc:src/routes/index.ts))
+All routes are mounted under their respective prefixes:
+- `/auth` - Authentication endpoints
+- `/users` - User management
+- `/loans` - Loan management and payments
+- `/accounts` - Account operations
+- `/transactions` - Transaction handling
+
+### Loan Routes ([src/routes/loan.routes.ts](mdc:src/routes/loan.routes.ts))
+Key endpoints with proper authentication:
+- `POST /` - Create loan (members only)
+- `GET /` - List loans with filtering
+- `GET /stats` - Loan statistics
+- `GET /member/stats` - Member-specific loan data
+- `POST /:loan/payments` - Record loan payments
+- `POST /:loan/interests` - Record interest payments
+
+## Business Logic Patterns
+
+### Loan Management
+1. **Loan Creation**: Auto-generates sequential loan numbers per year
+2. **Payment Tracking**: Separate tracking for principal and interest payments
+3. **Balance Calculations**: Real-time outstanding balance calculations
+4. **Status Management**: Automatic status updates based on payments
+
+### Interest Calculations
+- Monthly interest rates stored per loan
+- Configurable interest start dates
+- Separate interest payment tracking with status management
+
+### Transaction Handling
+- All financial operations create corresponding transaction records
+- Transaction types categorize different operations
+- Audit trail for all financial activities
+
+## Development Patterns
+
+### TypeScript Usage
+- Strict typing with interfaces for all models
+- Extended Express types for authentication
+- Enum usage for status and type fields
+- Generic types for MongoDB operations
+
+### Error Handling
+- Centralized error middleware in [src/middleware/error.ts](mdc:src/middleware/error.ts)
+- Consistent API response format
+- Graceful database connection handling
+
+### Validation
+- Mongoose schema validation for data integrity
+- Custom validators for date formats (YYYY-MM-01)
+- String length and numeric range validations
+
+## Development Scripts
+
+### Available Commands ([package.json](mdc:package.json))
+- `npm run dev` - Development with nodemon
+- `npm run build` - TypeScript compilation
+- `npm run start` - Production server
+- `npm run lint` - ESLint checking
+- `npm run type-check` - TypeScript type checking
+- `npm run setup-admin` - Admin user setup script
+
+## Key Dependencies
+- **Express.js**: Web framework
+- **Mongoose**: MongoDB ODM with schema validation
+- **JWT**: Authentication tokens
+- **bcryptjs**: Password hashing
+- **Helmet**: Security headers
+- **Morgan**: HTTP request logging
+
+## Database Connection
+- Singleton pattern implementation in [src/database/connection.ts](mdc:src/database/connection.ts)
+- Connection pooling and timeout configuration
+- Graceful connection management with health checks
+
+## API Documentation
+Bruno API documentation files are available in [api-doc/](mdc:api-doc) directory:
+- Authentication flows
+- CRUD operations for all entities
+- Payment and interest management endpoints
+
+## File Naming Conventions
+- **Models**: PascalCase with `.ts` extension
+- **Controllers**: camelCase with `.controller.ts` suffix
+- **Routes**: camelCase with `.routes.ts` suffix
+- **Middleware**: camelCase with `.middleware.ts` suffix
+- **Interfaces**: Prefixed with `I` (e.g., `IUser`, `ILoan`)
+- **Types**: Prefixed with `T` (e.g., `TUser`, `TLoan`)
+
+## Security Features
+- JWT-based authentication
+- Role-based access control
+- Password hashing with bcrypt
+- CORS configuration
+- Security headers via Helmet
+- Input validation and sanitization

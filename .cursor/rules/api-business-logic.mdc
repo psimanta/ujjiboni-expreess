@@ -1,0 +1,264 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# API Endpoints & Business Logic Reference
+
+## Loan Management API
+
+### Core Loan Operations
+
+Based on [src/routes/loan.routes.ts](mdc:src/routes/loan.routes.ts) and [src/controllers/loan.controller.ts](mdc:src/controllers/loan.controller.ts):
+
+#### Loan Creation
+
+- **Endpoint**: `POST /loans`
+- **Authentication**: Members only (`requireMemberOnly`)
+- **Auto-generates**: Sequential loan number per year (LN2024001, LN2024002, etc.)
+- **Required Fields**: principalAmount, monthlyInterestRate, loanType, interestStartMonth, loanDisbursementMonth
+
+#### Loan Retrieval
+
+- **`GET /loans`**: List all loans with filtering (admin/member based)
+- **`GET /loans/:id`**: Get specific loan by ID
+- **`GET /loans/stats`**: Overall loan statistics
+- **`GET /loans/member/stats`**: Member-specific loan statistics
+
+#### Payment Management
+
+- **`POST /loans/:loan/payments`**: Record principal payments (members only)
+- **`GET /loans/:loan/payments`**: Get payment history for a loan
+- **`POST /loans/:loan/interests`**: Record interest payments (members only)
+- **`GET /loans/:loan/interests`**: Get interest payment history
+
+## Business Logic Patterns
+
+### Loan Status Management
+
+From [src/models/Loan.ts](mdc:src/models/Loan.ts):
+
+- **ACTIVE**: Default status for new loans
+- **COMPLETED**: Set when principal is fully paid
+- Status transitions handled automatically based on payment records
+
+### Interest Calculation System
+
+- **Monthly Interest Rate**: Stored as decimal (e.g., 0.02 for 2%)
+- **Interest Start Month**: Format YYYY-MM-01 (e.g., "2024-01-01")
+- **Disbursement Month**: When loan was actually given
+- **Separate Tracking**: Interest payments tracked separately from principal
+
+### Payment Processing Logic
+
+1. **Principal Payments**: Reduce outstanding loan balance
+2. **Interest Payments**: Track monthly interest obligations
+3. **Balance Calculation**: Real-time via aggregation of payment records
+4. **Payment History**: Chronological record with user attribution
+
+### Loan Number Generation Algorithm
+
+```typescript
+// Pattern: LN{YEAR}{0001}
+const currentYear = new Date().getFullYear();
+const prefix = `LN${currentYear}`;
+// Find last loan for current year and increment
+const sequence = lastSequence + 1;
+return `${prefix}${sequence.toString().padStart(4, "0")}`;
+```
+
+## User Management & Authentication
+
+### User Roles & Permissions
+
+From [src/models/User.ts](mdc:src/models/User.ts) and [src/middleware/auth.middleware.ts](mdc:src/middleware/auth.middleware.ts):
+
+#### Admin Capabilities
+
+- Create/update/view all users
+- View all loans and transactions
+- Access system statistics
+- Perform admin-only operations
+
+#### Member Capabilities
+
+- Create loans for themselves
+- Record payments (principal and interest)
+- View their own loan history
+- Update their profile
+
+### Authentication Flow
+
+1. Login via `/auth/login` with email/password
+2. Receive JWT token with user info and role
+3. Include token in `Authorization: Bearer {token}` header
+4. Middleware validates token and attaches user to request
+
+## Account & Transaction System
+
+### Account Management
+
+From [src/models/Accounts.ts](mdc:src/models/Accounts.ts):
+
+- Each member has associated accounts
+- Tracks balances and account status
+- Links to transaction history
+
+### Transaction Recording
+
+From [src/models/Transaction.ts](mdc:src/models/Transaction.ts):
+
+- All financial operations create transaction records
+- Multiple transaction types supported
+- Audit trail for all financial activities
+- Links to accounts and users
+
+## Data Validation Rules
+
+### Date Format Requirements
+
+- All date fields use YYYY-MM-01 format
+- Represents first day of the month
+- Custom validators enforce this format
+
+### Monetary Values
+
+- All amounts stored as numbers (not strings)
+- Positive values enforced via schema validation
+- Precision handled at application level
+
+### Text Fields
+
+- Names and descriptions have length limits
+- Proper trimming and sanitization
+- Optional fields clearly marked
+
+## API Response Patterns
+
+### Successful Operations
+
+```json
+{
+  "success": true,
+  "loan": {
+    "_id": "...",
+    "loanNumber": "LN20240001",
+    "principalAmount": 10000,
+    "status": "ACTIVE"
+  },
+  "message": "Loan created successfully"
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "message": "Principal amount must be positive"
+}
+```
+
+### Pagination Pattern
+
+```json
+{
+  "success": true,
+  "loans": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "pages": 3
+  }
+}
+```
+
+## Common Query Patterns
+
+### Finding User's Loans
+
+```typescript
+// From Loan model static method
+Loan.findByMember(memberId)
+  .populate("memberId", "fullName email")
+  .populate("enteredBy", "fullName email")
+  .sort({ createdAt: -1 });
+```
+
+### Calculating Outstanding Balance
+
+```typescript
+// From Loan instance method
+const payments = await LoanPayment.aggregate([
+  { $match: { loan: this._id } },
+  { $group: { _id: null, totalPaid: { $sum: "$amount" } } },
+]);
+const outstandingBalance = this.principalAmount - totalPaid;
+```
+
+### Loan Statistics
+
+```typescript
+// Aggregation for summary statistics
+const summary = await Loan.aggregate([
+  { $match: matchCriteria },
+  {
+    $group: {
+      _id: "$status",
+      count: { $sum: 1 },
+      totalPrincipal: { $sum: "$principalAmount" },
+    },
+  },
+]);
+```
+
+## External Service Integration
+
+### Email Service
+
+From [src/services/email.service.ts](mdc:src/services/email.service.ts):
+
+- Loan notifications
+- Payment confirmations
+- System alerts
+- User communication
+
+## Development Environment
+
+### Database Setup
+
+- MongoDB connection via [src/database/connection.ts](mdc:src/database/connection.ts)
+- Singleton pattern for connection management
+- Proper connection pooling and error handling
+
+### API Documentation
+
+Bruno API files in [api-doc/](mdc:api-doc) provide:
+
+- Request/response examples
+- Authentication flows
+- Error scenario testing
+- Complete API coverage
+
+## Security Implementation
+
+### Password Security
+
+- bcrypt hashing with salt rounds
+- No plaintext password storage
+- Secure password comparison
+
+### JWT Security
+
+- Configurable expiration times
+- Secret key from environment variables
+- Proper token verification and refresh
+
+### Input Validation
+
+- Schema-level validation via Mongoose
+- Custom business rule validation
+- SQL injection prevention (MongoDB)
+- XSS protection via sanitization

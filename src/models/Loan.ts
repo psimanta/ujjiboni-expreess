@@ -14,6 +14,7 @@ export enum LoanType {
 }
 
 export interface ILoan extends Document {
+  _id: mongoose.Types.ObjectId;
   memberId: mongoose.Types.ObjectId;
   loanType: LoanType;
   loanNumber: string;
@@ -173,7 +174,7 @@ loanSchema.statics.generateLoanNumber = async function (): Promise<string> {
 
 // Static method to find loans by member
 loanSchema.statics.findByMember = function (memberId: string) {
-  return this.find({ memberId })
+  return this.find({ memberId, status: LoanStatus.ACTIVE })
     .populate('memberId', 'fullName email')
     .populate('enteredBy', 'fullName email')
     .sort({ createdAt: -1 });
