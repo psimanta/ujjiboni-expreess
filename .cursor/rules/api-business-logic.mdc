@@ -21,9 +21,14 @@ Based on [src/routes/loan.routes.ts](mdc:src/routes/loan.routes.ts) and [src/con
 #### Loan Retrieval
 
 - **`GET /loans`**: List all loans with filtering (admin/member based)
-- **`GET /loans/:id`**: Get specific loan by ID
-- **`GET /loans/stats`**: Overall loan statistics
+- **`PUT /loans/:id`**: Update loan (members only)
+- **`GET /loans/stats`**: Comprehensive loan statistics including:
+  - Total outstanding balance of all active loans
+  - Total due (principal + interest) across all loans
+  - Recovery rates and average loan amounts
+  - Interest payment summaries
 - **`GET /loans/member/stats`**: Member-specific loan statistics
+- **`GET /loans/:id`**: Get specific loan by ID
 
 #### Payment Management
 
@@ -89,10 +94,27 @@ From [src/models/User.ts](mdc:src/models/User.ts) and [src/middleware/auth.middl
 
 ### Authentication Flow
 
+#### Standard Login
 1. Login via `/auth/login` with email/password
 2. Receive JWT token with user info and role
 3. Include token in `Authorization: Bearer {token}` header
 4. Middleware validates token and attaches user to request
+
+#### OTP-Based Password Setup (for invited members)
+1. Admin creates user → System automatically generates OTP and sends welcome email with OTP
+2. User receives welcome email with 6-digit OTP (expires in 15 minutes)
+3. User sets password via `/auth/setup-password-with-otp` with userId, OTP, and new password
+4. User receives JWT token after successful verification
+
+#### Available Auth Endpoints
+- **`POST /auth/login`**: Standard login with email/password
+- **`POST /auth/setup-password`**: Legacy password setup (direct with userId)
+- **`POST /auth/setup-password-with-otp`**: Verify OTP and set password (OTP from welcome email)
+- **`POST /auth/request-password-reset`**: Request password reset token
+- **`POST /auth/reset-password`**: Reset password with token
+- **`GET /auth/profile`**: Get user profile (authenticated)
+- **`POST /auth/change-password`**: Change password (authenticated)
+- **`GET /auth/verify-token`**: Verify JWT token validity
 
 ## Account & Transaction System
 
@@ -214,16 +236,62 @@ const summary = await Loan.aggregate([
 ]);
 ```
 
+### Comprehensive Loan Statistics Response
+The `/loans/stats` endpoint returns detailed financial metrics:
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalLoans": 50,
+    "activeLoans": 35,
+    "completedLoans": 15,
+    "totalPrincipalAmount": 500000,
+    "totalOutstandingBalance": 275000,
+    "totalPrincipalDue": 275000,
+    "totalInterestGenerated": 45000,
+    "totalInterestPaid": 30000,
+    "totalInterestDue": 15000,
+    "totalDue": 290000,
+    "averageLoanAmount": 10000,
+    "recoveryRate": 45.0,
+    "loanBreakdown": {
+      "activeLoanBalances": [
+        {
+          "loanId": "...",
+          "loanNumber": "LN20240001",
+          "principalAmount": 25000,
+          "outstandingBalance": 15000
+        }
+      ],
+      "interestPaymentCount": 120
+    }
+  },
+  "message": "Loan statistics retrieved successfully"
+}
+```
+
 ## External Service Integration
 
 ### Email Service
 
 From [src/services/email.service.ts](mdc:src/services/email.service.ts):
 
-- Loan notifications
-- Payment confirmations
-- System alerts
-- User communication
+- **Welcome emails**: Sent to newly invited users with login instructions and embedded OTP for password setup
+- **Password reset emails**: Secure reset links with expiration warnings
+- **Loan notifications**: Payment reminders and status updates
+- **Payment confirmations**: Receipt of payments and transactions
+- **System alerts**: Important system notifications
+- **User communication**: General admin-to-member communication
+
+#### Welcome Email with OTP Features
+- Professional HTML styling with branding
+- Conditional OTP display for first-time users (6-digit codes)
+- Large, clear OTP presentation with monospace font
+- Security warnings and best practices
+- 15-minute expiration notice
+- Plain text fallback for all email clients
+- Graceful fallback to standard welcome email if OTP generation fails
 
 ## Development Environment
 

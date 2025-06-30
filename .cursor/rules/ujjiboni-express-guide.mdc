@@ -55,6 +55,12 @@ All models are exported from [src/models/index.ts](mdc:src/models/index.ts):
 - **LoanPayment** ([src/models/LoanPayment.ts](mdc:src/models/LoanPayment.ts)): Principal payments
 - **InterestPayment** ([src/models/InterestPayment.ts](mdc:src/models/InterestPayment.ts)): Interest payments with status tracking
 
+#### Security & Authentication Models
+- **OTP** ([src/models/OTP.ts](mdc:src/models/OTP.ts)): One-Time Password for secure operations
+  - **Status**: `PENDING`, `USED`, `EXPIRED`
+  - **Purpose**: `PASSWORD_SETUP`, `PASSWORD_RESET`, `EMAIL_VERIFICATION`
+  - **Features**: Auto-expiry, attempt limits, secure generation and verification
+
 ## Authentication & Authorization
 
 ### Middleware ([src/middleware/auth.middleware.ts](mdc:src/middleware/auth.middleware.ts))
