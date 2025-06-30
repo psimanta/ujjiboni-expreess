@@ -4,7 +4,7 @@
   "description": "A minimal Express.js and TypeScript boilerplate with environment variable support",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
     "dev": "nodemon",
     "dev:ts": "ts-node api/index.ts",
@@ -35,7 +35,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "morgan": "^1.10.0",
-    "nodemailer": "^7.0.3"
+    "nodemailer": "^7.0.3",
+    "rimraf": "^6.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
