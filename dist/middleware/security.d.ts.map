@@ -1,1 +1,1 @@
-{"version":3,"file":"security.d.ts","sourceRoot":"","sources":["../../src/middleware/security.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,WAAW,EAAE,MAAM,SAAS,CAAC;AAItC,QAAA,MAAM,kBAAkB,GAAI,KAAK,WAAW,KAAG,IAa9C,CAAC;AAEF,eAAe,kBAAkB,CAAC"}
+{"version":3,"file":"security.d.ts","sourceRoot":"","sources":["../../api/middleware/security.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,WAAW,EAAE,MAAM,SAAS,CAAC;AAItC,QAAA,MAAM,kBAAkB,GAAI,KAAK,WAAW,KAAG,IAa9C,CAAC;AAEF,eAAe,kBAAkB,CAAC"}

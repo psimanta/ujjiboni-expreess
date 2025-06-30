@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/controllers/index.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;AACA,uDAAqC;AACrC,2DAAyC"}
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../api/controllers/index.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;AACA,uDAAqC;AACrC,2DAAyC"}

@@ -8,7 +8,7 @@ alwaysApply: false
 ## Loan Management API
 
 ### Core Loan Operations
-
+    
 Based on [src/routes/loan.routes.ts](mdc:src/routes/loan.routes.ts) and [src/controllers/loan.controller.ts](mdc:src/controllers/loan.controller.ts):
 
 #### Loan Creation
